@@ -10,3 +10,6 @@ class File(Model):
     size        = IntegerField(verbose_name="Размер")
     mime_type   = CharField(max_length=255, verbose_name="MIME-тип")
     data        = FileField(verbose_name="Содержимое")
+
+    def __str__(self):
+        return f"{self.name} ({self.mime_type}, {self.size})"

@@ -8,5 +8,8 @@ class Course(Model):
     description = TextField(verbose_name="Описание")
 
     # public = BooleanField(verbose_name="Публичный")
-    teachers    = ManyToManyField(User, related_name="teachers", verbose_name="Преподаватели")
-    students    = ManyToManyField(User, related_name="students", verbose_name="Учащиеся")
+    teachers    = ManyToManyField(User, related_name="teachers", verbose_name="Преподаватели", blank=True)
+    students    = ManyToManyField(User, related_name="students", verbose_name="Учащиеся", blank=True)
+
+    def __str__(self):
+        return f"{self.title}"

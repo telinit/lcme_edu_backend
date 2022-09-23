@@ -15,6 +15,9 @@ class Activity(Model):
 
     order       = IntegerField(verbose_name="Номер в списке курса")
 
+    def __str__(self):
+        return f"{self.course}: {self.order}. {self.title}"
+
 
 class ActivityBasic(Activity):
     pass
