@@ -1,15 +1,16 @@
 from django.db.models import *
+from polymorphic.models import PolymorphicModel
 
 # from ..activity.models import ActivityTask
 from ..file.models import File
 from ..user.models import User
 
 
-class MessageContent(Model):
+class MessageContent(PolymorphicModel):
     class Meta:
         abstract = True
 
-    body        = TextField()
+    body        = TextField(blank=True)
     attachments = ManyToManyField(File, verbose_name="Вложения")
 
 

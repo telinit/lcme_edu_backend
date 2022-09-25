@@ -1,17 +1,18 @@
 from django.db.models import *
+from polymorphic.models import PolymorphicModel
 
 from ..course.models import Course
 from ..file.models import File
 from ..message.models import MessageContent
 
 
-class Activity(Model):
-    course      = ForeignKey(Course, verbose_name="Курс", on_delete=CASCADE)
+class Activity(PolymorphicModel):
+    course      = ForeignKey(Course, verbose_name="Курс", editable=False, on_delete=CASCADE)
 
-    title       = CharField(max_length=255, verbose_name="Название")
+    title       = CharField(max_length=255, verbose_name="Название", blank=False)
 
-    is_hidden   = BooleanField(verbose_name="Скрыта")
-    is_markable = BooleanField(verbose_name="Оцениваемая")
+    is_hidden   = BooleanField(verbose_name="Скрыта", default=False)
+    is_markable = BooleanField(verbose_name="Оцениваемая", default=True)
 
     order       = IntegerField(verbose_name="Номер в списке курса")
 

@@ -1,13 +1,14 @@
 from django.db.models import *
+from polymorphic.models import PolymorphicModel
 
 from ..activity.models import Activity
 from ..user.models import User
 
 
-class Mark(Model):
+class Mark(PolymorphicModel):
     teacher = ForeignKey(User, verbose_name="Преподаватель", related_name="teacher", on_delete=CASCADE)
     student = ForeignKey(User, verbose_name="Учащийся", related_name="student", on_delete=CASCADE)
-    value   = CharField(max_length=255, verbose_name="Значение")
+    value   = CharField(max_length=255, verbose_name="Значение", blank=False, null=False)
     comment = TextField(verbose_name="Коментарий", blank=True)
 
     def __str__(self):
