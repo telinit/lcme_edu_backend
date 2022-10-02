@@ -14,11 +14,6 @@ class MarkActivityAdmin(VersionAdmin):
     pass
 
 
-@admin.register(MarkDiscipline)
-class MarkDisciplineAdmin(VersionAdmin):
-    pass
-
-
 @admin.register(MarkFinal)
 class MarkFinalAdmin(VersionAdmin):
     pass

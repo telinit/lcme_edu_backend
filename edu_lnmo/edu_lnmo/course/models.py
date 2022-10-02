@@ -1,22 +1,36 @@
 from django.db.models import *
 
+from .. import course
+from ..common.models import CommonObject
 from ..file.models import File
 from ..user.models import User
 
 
-class Course(Model):
+class Course(CommonObject):
     title       = CharField(max_length=255, verbose_name="Название", blank=False)
     description = TextField(verbose_name="Описание")
 
-    logo        = ForeignKey(File, related_name="logo", verbose_name="Логотип", null=True, on_delete=SET_NULL)
-    cover       = ForeignKey(File, related_name="cover", verbose_name="Обложка", null=True, on_delete=SET_NULL)
-
-    # public = BooleanField(verbose_name="Публичный")
-    teachers    = ManyToManyField(User, related_name="teachers", verbose_name="Преподаватели", blank=True)
-    students    = ManyToManyField(User, related_name="students", verbose_name="Учащиеся", blank=True)
+    logo        = ForeignKey(File, related_name="logo", verbose_name="Логотип", blank=True, null=True, on_delete=SET_NULL)
+    cover       = ForeignKey(File, related_name="cover", verbose_name="Обложка", blank=True, null=True, on_delete=SET_NULL)
 
     def __str__(self):
         return f"{self.title}"
+
+    @property
+    def teachers(self):
+        return CourseEnrollment.objects.filter(
+            course=self,
+            finished_on=None,
+            role=CourseEnrollment.EnrollmentRole.teacher
+        )
+
+    @property
+    def students(self):
+        return CourseEnrollment.objects.filter(
+            course=self,
+            finished_on=None,
+            role=CourseEnrollment.EnrollmentRole.student
+        )
 
     def user_has_permissions(self, uid: str, read: bool = False, write: bool = False) -> bool:
         u = User(pk=uid)
@@ -30,3 +44,14 @@ class Course(Model):
             return False
 
         return True
+
+
+class CourseEnrollment(CommonObject):
+    class EnrollmentRole(TextChoices):
+        teacher  = 't', "Преподаватель"
+        student  = 's', "Учащийся"
+
+    person      = ForeignKey(User, verbose_name="Пользователь", on_delete=CASCADE)
+    course      = ForeignKey(Course, verbose_name="Курс", on_delete=CASCADE)
+    role        = CharField(choices=EnrollmentRole.choices, max_length=3)
+    finished_on = DateTimeField(verbose_name="Завершена", null=True)

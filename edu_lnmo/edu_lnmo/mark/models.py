@@ -1,11 +1,12 @@
 from django.db.models import *
-from polymorphic.models import PolymorphicModel
 
 from ..activity.models import Activity
+from ..course.models import Course
 from ..user.models import User
+from ..common.models import CommonObject
 
 
-class Mark(PolymorphicModel):
+class Mark(CommonObject):
     teacher = ForeignKey(User, verbose_name="Преподаватель", related_name="teacher", on_delete=CASCADE)
     student = ForeignKey(User, verbose_name="Учащийся", related_name="student", on_delete=CASCADE)
     value   = CharField(max_length=255, verbose_name="Значение", blank=False, null=False)
@@ -22,11 +23,9 @@ class MarkActivity(Mark):
         return f"{self.student}: {self.activity} ({self.value})"
 
 
-class MarkDiscipline(Mark):
-    pass
-
-
 class MarkFinal(Mark):
+    course = ForeignKey(Course, verbose_name="Курс", on_delete=CASCADE)
+
     class FinalType(TextChoices):
         Q1  = 'Q1', "1 четверть"
         Q2  = 'Q2', "2 четверть"
@@ -35,6 +34,7 @@ class MarkFinal(Mark):
         H1  = 'H1', "1 полугодие"
         H2  = 'H2', "2 полугодие"
         Y   = 'Y', "Годовая"
+        E   = 'E', "Экзамен"
         F   = 'F', "Итоговая"
 
     final_type = CharField(choices=FinalType.choices, default=FinalType.F, max_length=2)

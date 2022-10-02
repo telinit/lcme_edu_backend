@@ -1,9 +1,10 @@
 from django.db.models import *
 
+from ..common.models import CommonObject
 from ..user.models import User
 
 
-class File(Model):
+class File(CommonObject):
     name        = CharField(max_length=255, verbose_name="Название")
     owner       = ForeignKey(User, verbose_name="Владелец", on_delete=CASCADE)
     hash        = CharField(max_length = 64, blank = False, unique=True, verbose_name = "Хеш файла")

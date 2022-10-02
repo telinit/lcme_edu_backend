@@ -1,10 +1,15 @@
-from ninja import Router, Schema
+from rest_framework import permissions, viewsets, serializers
 
-router = Router()
+from .models import File
 
-class FileIO(Schema):
-    pass
 
-@router.get('/')
-def list_events(request):
-    return []
+class FileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = '__all__'
+
+
+class FileViewSet(viewsets.ModelViewSet):
+    queryset = File.objects.all()
+    serializer_class = FileSerializer
+    permission_classes = [permissions.AllowAny]

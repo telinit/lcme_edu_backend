@@ -1,8 +1,15 @@
-from ninja import Router
+from rest_framework import serializers, viewsets, permissions
 
-router = Router()
+from .models import User
 
 
-@router.get('/')
-def list_events(request):
-    return []
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]

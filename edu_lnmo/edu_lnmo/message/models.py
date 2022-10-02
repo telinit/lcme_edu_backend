@@ -1,17 +1,17 @@
 from django.db.models import *
-from polymorphic.models import PolymorphicModel
 
+from ..common.models import CommonObject
 # from ..activity.models import ActivityTask
 from ..file.models import File
 from ..user.models import User
 
 
-class MessageContent(PolymorphicModel):
+class MessageContent(CommonObject):
     class Meta:
         abstract = True
 
     body        = TextField(blank=True)
-    attachments = ManyToManyField(File, verbose_name="Вложения")
+    attachments = ManyToManyField(File, verbose_name="Вложения", blank=True)
 
 
 class Message(MessageContent):
@@ -26,7 +26,6 @@ class Message(MessageContent):
 
 class MessagePrivate(Message):
     receiver    = ForeignKey(User, verbose_name="Получатель", on_delete=CASCADE)
-    is_read     = BooleanField(verbose_name="Прочитано")
 
     def __str__(self):
         return f"{self.sent_at}: {self.sender} -> {self.receiver}"

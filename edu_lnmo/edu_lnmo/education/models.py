@@ -1,10 +1,10 @@
 from django.db.models import *
 
-from ..common.models import Department
+from ..common.models import Department, CommonObject
 from ..user.models import User
 
 
-class EducationSpecialization(Model):
+class EducationSpecialization(CommonObject):
     name        = CharField(max_length=255, verbose_name="Название")
     department  = ForeignKey(Department, verbose_name="Подразделение учебного заведения", on_delete=CASCADE)
 
@@ -12,7 +12,7 @@ class EducationSpecialization(Model):
         return f"{self.department}: {self.name}"
 
 
-class Education(Model):
+class Education(CommonObject):
     student         = ForeignKey(User, verbose_name="Учащийся", on_delete=CASCADE)
 
     started         = DateField(verbose_name="Дата поступления")

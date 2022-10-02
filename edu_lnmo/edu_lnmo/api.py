@@ -1,40 +1,46 @@
-from jwt import decode
-from ninja import NinjaAPI
-from ninja.security import HttpBearer
+from rest_framework import routers
 
-from .settings import JWT_PUBLIC_KEY
-from .user.api import router as router_user
-from .course.api import router as router_course
-from .activity.api import router as router_activity
-from .mark.api import router as router_mark
-from .message.api import router as router_message
-
-
-class AuthBearer(HttpBearer):
-    def authenticate(self, request, token):
-        jwt = decode(
-            jwt = token,
-            key = JWT_PUBLIC_KEY,
-            algorithms=['RS512']
-        )
-
-        if "edu_admin" not in jwt:
-            jwt["edu_admin"] = False
-
-        if "sub" not in jwt:
-            raise Exception("Unauthorized")
-
-        request.jwt = jwt
-        request.user_id = jwt["sub"]
-        request.is_admin = jwt["edu_admin"]
-
-        return jwt
+from .activity.api import ActivityArticleViewSet, ActivityViewSet, ActivityTaskViewSet, ActivityLinkViewSet, \
+    ActivityMediaViewSet
+from .common.api import DepartmentViewSet, OrganizationViewSet
+from .course.api import CourseViewSet, CourseEnrollmentViewSet
+from .education.api import EducationSpecializationViewSet, EducationViewSet
+from .file.api import FileViewSet
+from .mark.api import MarkFinalViewSet, MarkActivityViewSet, MarkViewSet
+from .message.api import MessageNewsViewSet, MessageViewSet, MessageTaskSubmissionViewSet, MessagePrivateViewSet
+from .unread.api import UnreadObjectViewSet
+from .user.api import UserViewSet
 
 
-api = NinjaAPI(auth=AuthBearer())
+api = routers.DefaultRouter()
 
-api.add_router("/user", router_user)
-api.add_router("/course", router_course)
-api.add_router("/activity", router_activity)
-api.add_router("/mark", router_mark)
-api.add_router("/message", router_message)
+
+api.register(r'activity/article', ActivityArticleViewSet)
+api.register(r'activity/task', ActivityTaskViewSet)
+api.register(r'activity/link', ActivityLinkViewSet)
+api.register(r'activity/media', ActivityMediaViewSet)
+api.register(r'activity', ActivityViewSet)
+
+api.register(r'course/enrollment', CourseEnrollmentViewSet)
+api.register(r'course', CourseViewSet)
+
+api.register(r'common/organisation', OrganizationViewSet)
+api.register(r'common/department', DepartmentViewSet)
+
+api.register(r'education/specialization', EducationSpecializationViewSet)
+api.register(r'education', EducationViewSet)
+
+api.register(r'file', FileViewSet)
+
+api.register(r'mark/activity', MarkActivityViewSet)
+api.register(r'mark/final', MarkFinalViewSet)
+api.register(r'mark', MarkViewSet)
+
+api.register(r'message/private', MessagePrivateViewSet)
+api.register(r'message/task', MessageTaskSubmissionViewSet)
+api.register(r'message/news', MessageNewsViewSet)
+api.register(r'message', MessageViewSet)
+
+api.register(r'unread', UnreadObjectViewSet)
+
+api.register(r'user', UserViewSet)
