@@ -1,12 +1,11 @@
 from rest_framework import routers
 
-from .activity.api import ActivityArticleViewSet, ActivityViewSet, ActivityTaskViewSet, ActivityLinkViewSet, \
-    ActivityMediaViewSet
+from .activity.api import ActivityViewSet
 from .common.api import DepartmentViewSet, OrganizationViewSet
 from .course.api import CourseViewSet, CourseEnrollmentViewSet
 from .education.api import EducationSpecializationViewSet, EducationViewSet
 from .file.api import FileViewSet
-from .mark.api import MarkFinalViewSet, MarkActivityViewSet, MarkViewSet
+from .mark.api import MarkViewSet
 from .message.api import MessageNewsViewSet, MessageViewSet, MessageTaskSubmissionViewSet, MessagePrivateViewSet
 from .unread.api import UnreadObjectViewSet
 from .user.api import UserViewSet
@@ -15,10 +14,6 @@ from .user.api import UserViewSet
 api = routers.DefaultRouter()
 
 
-api.register(r'activity/article', ActivityArticleViewSet)
-api.register(r'activity/task', ActivityTaskViewSet)
-api.register(r'activity/link', ActivityLinkViewSet)
-api.register(r'activity/media', ActivityMediaViewSet)
 api.register(r'activity', ActivityViewSet)
 
 api.register(r'course/enrollment', CourseEnrollmentViewSet)
@@ -32,8 +27,6 @@ api.register(r'education', EducationViewSet)
 
 api.register(r'file', FileViewSet)
 
-api.register(r'mark/activity', MarkActivityViewSet)
-api.register(r'mark/final', MarkFinalViewSet)
 api.register(r'mark', MarkViewSet)
 
 api.register(r'message/private', MessagePrivateViewSet)

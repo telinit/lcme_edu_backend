@@ -1,7 +1,6 @@
 from django.db.models import *
 
 from ..common.models import CommonObject
-# from ..activity.models import ActivityTask
 from ..file.models import File
 from ..user.models import User
 
@@ -32,7 +31,7 @@ class MessagePrivate(Message):
 
 
 class MessageTaskSubmission(MessagePrivate):
-    activity = ForeignKey("ActivityTask", verbose_name="Задание", on_delete=CASCADE)
+    activity = ForeignKey("Activity", verbose_name="Задание", on_delete=CASCADE)
 
 
 class MessageNews(Message):

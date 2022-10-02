@@ -31,9 +31,9 @@ class Activity(CommonObject):
     body = TextField(blank=True)
     files = ManyToManyField(File, verbose_name="Вложения/файлы", blank=True)
 
-    due_date = DateTimeField(verbose_name="Срок сдачи", null=True)
+    due_date = DateTimeField(verbose_name="Срок сдачи", null=True, blank=True)
 
-    link = URLField(verbose_name="Ссылка")
+    link = URLField(verbose_name="Ссылка", null=True, blank=True)
     embed = BooleanField(default=True, verbose_name="Встроена")
 
     def __str__(self):
