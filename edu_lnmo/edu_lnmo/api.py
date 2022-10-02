@@ -10,7 +10,6 @@ from .message.api import MessageNewsViewSet, MessageViewSet, MessageTaskSubmissi
 from .unread.api import UnreadObjectViewSet
 from .user.api import UserViewSet
 
-
 api = routers.DefaultRouter()
 
 

@@ -1,9 +1,9 @@
 from django.db.models import *
 
 from ..activity.models import Activity
+from ..common.models import CommonObject
 from ..course.models import Course
 from ..user.models import User
-from ..common.models import CommonObject
 
 
 class Mark(CommonObject):

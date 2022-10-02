@@ -1,6 +1,5 @@
 from django.db.models import *
 
-from .. import course
 from ..common.models import CommonObject
 from ..file.models import File
 from ..user.models import User

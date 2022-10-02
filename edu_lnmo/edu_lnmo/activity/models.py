@@ -3,7 +3,6 @@ from django.db.models import *
 from ..common.models import CommonObject
 from ..course.models import Course
 from ..file.models import File
-from ..message.models import MessageContent
 
 
 class Activity(CommonObject):
