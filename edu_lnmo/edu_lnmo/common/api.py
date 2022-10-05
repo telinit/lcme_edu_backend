@@ -1,4 +1,5 @@
 from rest_framework import serializers, viewsets, permissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Organization, Department
 
@@ -18,10 +19,12 @@ class DepartmentSerializer(serializers.ModelSerializer):
 class OrganizationViewSet(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.AllowAny]
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.AllowAny]

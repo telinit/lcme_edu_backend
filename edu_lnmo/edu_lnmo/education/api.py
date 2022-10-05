@@ -1,4 +1,5 @@
 from rest_framework import permissions, serializers, viewsets
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Education, EducationSpecialization
 
@@ -18,10 +19,12 @@ class EducationSpecializationSerializer(serializers.ModelSerializer):
 class EducationViewSet(viewsets.ModelViewSet):
     queryset = Education.objects.all()
     serializer_class = EducationSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.AllowAny]
 
 
 class EducationSpecializationViewSet(viewsets.ModelViewSet):
     queryset = EducationSpecialization.objects.all()
     serializer_class = EducationSpecializationSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.AllowAny]

@@ -7,12 +7,13 @@ from ..file.models import File
 
 class Activity(CommonObject):
     class ActivityType(TextChoices):
-        GEN  = 'GEN', "Общая"
+        GEN  = 'GEN', "Общая" # TODO: Implement first
         ART  = 'ART', "Статья"
         TSK  = 'TSK', "Задание"
         LNK  = 'LNK', "Ссылка"
         MED  = 'MED', "Медиа-контент"
 
+    # TODO: Implement first
     type = CharField(choices=ActivityType.choices, default=ActivityType.GEN, max_length=3)
 
     course              = ForeignKey(Course, verbose_name="Курс", on_delete=CASCADE)
@@ -25,6 +26,7 @@ class Activity(CommonObject):
 
     order               = IntegerField(verbose_name="Номер в списке курса")
     date                = DateField(verbose_name="Дата проведения", blank=True, null=True)
+    # TODO: Implement later
     group               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)
 
     body = TextField(blank=True)

@@ -8,6 +8,7 @@ class UnreadObject(CommonObject):
     class ObjType(TextChoices):
         MSG  = 'MSG', "Сообщение"
         MRK  = 'MRK', "Оценка"
+        CRS  = 'CRS', "Курс"
         ACT  = 'ACT', "Активность"
         NWS  = 'NWS', "Новость"
         EDU  = 'EDU', "Обучение"
@@ -19,3 +20,4 @@ class UnreadObject(CommonObject):
     obj = UUIDField(verbose_name="Объект", null=False)
     type = CharField(verbose_name="Тип объекта", choices=ObjType.choices, default=ObjType.UNK, max_length=3)
     user = ForeignKey(User, verbose_name="Пользователь", on_delete=CASCADE)
+    created = DateTimeField(verbose_name="Время")

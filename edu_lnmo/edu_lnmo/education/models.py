@@ -16,10 +16,10 @@ class Education(CommonObject):
     student         = ForeignKey(User, verbose_name="Учащийся", on_delete=CASCADE)
 
     started         = DateField(verbose_name="Дата поступления")
-    finished        = DateField(verbose_name="Дата завершения", null=True)
+    finished        = DateField(verbose_name="Дата завершения", null=True, blank=True)
 
     starting_class  = IntegerField(verbose_name="Класс поступления")
-    finishing_class = IntegerField(verbose_name="Класс завершения")
+    finishing_class = IntegerField(verbose_name="Класс завершения", null=True, blank=True)
 
     #department      = ForeignKey(Department, verbose_name="Подразделение")
     specialization  = ForeignKey(EducationSpecialization, verbose_name="Направление обучения", on_delete=CASCADE)

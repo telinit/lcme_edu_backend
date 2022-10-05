@@ -52,5 +52,6 @@ class CourseEnrollment(CommonObject):
 
     person      = ForeignKey(User, verbose_name="Пользователь", on_delete=CASCADE)
     course      = ForeignKey(Course, verbose_name="Курс", on_delete=CASCADE)
+    group       = CharField(verbose_name="Группа", max_length=255, null=True, blank=True)
     role        = CharField(choices=EnrollmentRole.choices, max_length=3)
     finished_on = DateTimeField(verbose_name="Завершена", null=True)
