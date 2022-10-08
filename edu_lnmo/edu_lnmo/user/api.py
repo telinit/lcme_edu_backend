@@ -60,7 +60,10 @@ class UserViewSet(viewsets.ModelViewSet):
             # Own students
             u3 = User.objects.filter(id__in=students)
 
-            return (u1 | u2 | u3).distinct()
+            # News writers
+            u4 = User.objects.filter(messages_sent__messagenews__isnull=False, messages_sent__sender__id=F('id'))
+
+            return (u1 | u2 | u3 | u4).distinct()
 
     @swagger_auto_schema(request_body=LoginSerializer, responses={200: 'Login succeeded. Cookies with a session key are set.', HTTP_403_FORBIDDEN: 'Wrong credentials'})
     @action(methods=['POST'], detail=False)
@@ -90,7 +93,7 @@ class UserViewSet(viewsets.ModelViewSet):
         request.user.save()
         return Response()
 
-    @swagger_auto_schema(responses={200: UserSerializer })
+    @swagger_auto_schema(responses={200: UserSerializer})
     @action(methods=['GET'], detail=False)
     def self(self, request: Request):
         return Response(UserSerializer(request.user).data)
