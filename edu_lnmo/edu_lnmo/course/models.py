@@ -50,19 +50,26 @@ class CourseEnrollment(CommonObject):
         teacher  = 't', "Преподаватель"
         student  = 's', "Учащийся"
 
-    person      = ForeignKey(User, verbose_name="Пользователь", on_delete=CASCADE)
-    course      = ForeignKey(Course, verbose_name="Курс", on_delete=CASCADE)
+    person      = ForeignKey(User, verbose_name="Пользователь", related_name="enrollments", on_delete=CASCADE)
+    course      = ForeignKey(Course, verbose_name="Курс", related_name="enrollments", on_delete=CASCADE)
     group       = CharField(verbose_name="Группа", max_length=255, null=True, blank=True)
     role        = CharField(choices=EnrollmentRole.choices, max_length=3)
     finished_on = DateTimeField(verbose_name="Завершена", null=True)
 
     @classmethod
     def get_courses_of_teacher(self, user):
-        return CourseEnrollment.objects.filter(
-            person=user,
-            role=self.EnrollmentRole.teacher,
-            finished_on__isnull=True
-        ).values("course")
+        q1 = Course.objects.filter(
+            enrollments__role=self.EnrollmentRole.teacher,
+            enrollments__finished_on__isnull=True,
+            enrollments__person=user
+        )
+        # q2 = CourseEnrollment.objects.filter(
+        #     person=user,
+        #     role=self.EnrollmentRole.teacher,
+        #     finished_on__isnull=True
+        # ).values("course")
+
+        return q1
 
     @classmethod
     def get_courses_of_student(self, user):
