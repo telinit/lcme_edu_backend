@@ -1,7 +1,5 @@
 from rest_framework import viewsets, serializers, permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import SessionAuthentication
 
 from .models import Activity
 
@@ -15,5 +13,5 @@ class ActivitySerializer(serializers.ModelSerializer):
 class ActivityViewSet(viewsets.ModelViewSet):
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.AllowAny]

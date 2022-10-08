@@ -8,7 +8,7 @@ from .file.api import FileViewSet
 from .mark.api import MarkViewSet
 from .message.api import MessageNewsViewSet, MessageViewSet, MessageTaskSubmissionViewSet, MessagePrivateViewSet
 from .unread.api import UnreadObjectViewSet
-from .user.api import UserViewSet
+from .user.api import UserViewSet, ParentsViewSet
 
 api = routers.DefaultRouter()
 
@@ -35,4 +35,5 @@ api.register(r'message', MessageViewSet)
 
 api.register(r'unread', UnreadObjectViewSet)
 
-api.register(r'user', UserViewSet)
+api.register(r'user/parents', ParentsViewSet)
+api.register(r'user', UserViewSet, basename="User")

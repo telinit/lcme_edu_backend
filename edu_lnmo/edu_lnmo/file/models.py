@@ -4,6 +4,8 @@ from ..common.models import CommonObject
 from ..user.models import User
 
 
+
+
 class File(CommonObject):
     name        = CharField(max_length=255, verbose_name="Название")
     hash        = CharField(max_length = 64, blank = False, unique=True, verbose_name = "Хеш файла")

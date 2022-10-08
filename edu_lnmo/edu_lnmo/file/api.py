@@ -1,4 +1,5 @@
 from rest_framework import permissions, viewsets, serializers
+from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import File
@@ -13,5 +14,5 @@ class FileSerializer(serializers.ModelSerializer):
 class FileViewSet(viewsets.ModelViewSet):
     queryset = File.objects.all()
     serializer_class = FileSerializer
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.AllowAny]

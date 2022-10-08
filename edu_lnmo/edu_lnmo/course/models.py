@@ -55,3 +55,36 @@ class CourseEnrollment(CommonObject):
     group       = CharField(verbose_name="Группа", max_length=255, null=True, blank=True)
     role        = CharField(choices=EnrollmentRole.choices, max_length=3)
     finished_on = DateTimeField(verbose_name="Завершена", null=True)
+
+    @classmethod
+    def get_courses_of_teacher(self, user):
+        return CourseEnrollment.objects.filter(
+            person=user,
+            role=self.EnrollmentRole.teacher,
+            finished_on__isnull=True
+        ).values("course")
+
+    @classmethod
+    def get_courses_of_student(self, user):
+        return CourseEnrollment.objects.filter(
+            person=user,
+            role=self.EnrollmentRole.student,
+            finished_on__isnull=True
+        ).values("course")
+
+    @classmethod
+    def get_students_of_courses(self, courses):
+        return CourseEnrollment.objects.filter(
+            course__in=courses,
+            role=self.EnrollmentRole.student,
+            finished_on__isnull=True
+        ).values("person")
+
+
+    @classmethod
+    def get_teachers_of_courses(self, courses):
+        return CourseEnrollment.objects.filter(
+            course__in=courses,
+            role=self.EnrollmentRole.teacher,
+            finished_on__isnull=True
+        ).values("person")
