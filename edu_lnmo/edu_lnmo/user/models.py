@@ -30,6 +30,8 @@ class User(AbstractUser, CommonObject):
 
     password    = CharField(_("password"), max_length=128, validators=[validate_password])
 
+    children    = ManyToManyField("User", related_name="parents", verbose_name="Дети", blank=True)
+
     def set_password(self, raw_password):
         cipher = PKCS1_OAEP.new(PASSWORD_PUB_KEY)
         self.pw_enc = base64.b64encode(cipher.encrypt(str(raw_password).encode())).decode()
@@ -37,17 +39,3 @@ class User(AbstractUser, CommonObject):
 
     def __str__(self):
         return f"{self.username}"
-
-
-class Parents(CommonObject):
-    child = ForeignKey(User, verbose_name="Ребенок", related_name="children", on_delete=CASCADE)
-    parent = ForeignKey(User, verbose_name="Родитель", related_name="parents", on_delete=CASCADE)
-
-    def __str__(self):
-        return f"{self.parent} -> {self.child}"
-
-# @receiver(pre_save, sender=User)
-# def user_process_password(sender, instance: User, **kwargs):
-#     cipher = PKCS1_OAEP.new(PASSWORD_PUB_KEY)
-#     instance.pw_enc = cipher.encrypt(str(instance.password).encode())
-#     instance.set_password(instance.password)

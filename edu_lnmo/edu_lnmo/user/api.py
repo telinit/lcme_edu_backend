@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST
 
-from .models import User, Parents
+from .models import User
 from ..course.models import CourseEnrollment
 
 
@@ -22,12 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
         exclude = ['password', 'pw_enc']
 
 
-class ParentsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Parents
-        fields = '__all__'
-
-
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=255)
@@ -35,13 +29,6 @@ class LoginSerializer(serializers.Serializer):
 
 class SetPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=255)
-
-
-class ParentsViewSet(viewsets.ModelViewSet):
-    queryset = Parents.objects.all()
-    serializer_class = ParentsSerializer
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -65,7 +52,7 @@ class UserViewSet(viewsets.ModelViewSet):
             students = CourseEnrollment.get_students_of_courses(courses)
 
             # Children
-            u1 = User.objects.filter(id=F('children__child__id'), children__parent__id=u.id)
+            u1 = u.children.all()
 
             # Self
             u2 = User.objects.filter(id=u.id)

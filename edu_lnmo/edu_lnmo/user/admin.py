@@ -35,7 +35,7 @@ class CustomUserAdmin(VersionAdmin, UserAdmin):
     f = ('username', 'email', 'password', 'pw_enc',
          'first_name', 'middle_name', 'last_name',
          'is_superuser', 'is_staff', 'is_active',
-         'avatar')
+         'avatar', 'children')
 
     fieldsets = (
         (None, {'fields': f}),
@@ -51,8 +51,3 @@ class CustomUserAdmin(VersionAdmin, UserAdmin):
 
 
 admin.site.register(User, CustomUserAdmin)
-
-
-@admin.register(Parents)
-class ParentsAdmin(VersionAdmin):
-    pass
