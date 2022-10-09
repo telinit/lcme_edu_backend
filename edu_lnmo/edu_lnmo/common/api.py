@@ -31,9 +31,7 @@ class OrganizationViewSet(EduModelViewSet):
                 return request_user_is_authenticated(request)
 
         def has_object_permission(self, request: Request, view: "OrganizationViewSet", obj: Organization):
-            if view.action == "retrieve":
-                return True
-            elif view.action in ["update", "partial_update", "destroy"]:
+            if view.action in ["update", "partial_update", "destroy"]:
                 return request_user_is_staff(request)
             else:
                 return request_user_is_authenticated(request)
@@ -45,7 +43,7 @@ class OrganizationViewSet(EduModelViewSet):
 
 
 class DepartmentViewSet(EduModelViewSet):
-    class OrganizationPermissions(BasePermission):
+    class DepartmentPermissions(BasePermission):
 
         def has_permission(self, request: Request, view: "DepartmentViewSet"):
             if view.action == "create":
@@ -54,9 +52,7 @@ class DepartmentViewSet(EduModelViewSet):
                 return request_user_is_authenticated(request)
 
         def has_object_permission(self, request: Request, view: "DepartmentViewSet", obj: Department):
-            if view.action == "retrieve":
-                return True
-            elif view.action in ["update", "partial_update", "destroy"]:
+            if view.action in ["update", "partial_update", "destroy"]:
                 return request_user_is_staff(request)
             else:
                 return request_user_is_authenticated(request)
@@ -64,4 +60,4 @@ class DepartmentViewSet(EduModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = []
+    permission_classes = [DepartmentPermissions]

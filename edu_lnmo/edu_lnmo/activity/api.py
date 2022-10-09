@@ -32,17 +32,13 @@ class ActivityViewSet(EduModelViewSet):
             return is_authenticated and (is_staff() or is_teacher())
 
         def has_permission(self, request: Request, view: "ActivityViewSet"):
-            if view.action in ["list"]:
-                return True
-            elif view.action in ["create"]:
+            if view.action in ["create"]:
                 return self.has_write_access(request)
             else:
                 return request_user_is_authenticated(request)
 
         def has_object_permission(self, request: Request, view: "ActivityViewSet", obj: Activity):
-            if view.action == "retrieve":
-                return True
-            elif view.action in ["update", "partial_update", "destroy"]:
+            if view.action in ["update", "partial_update", "destroy"]:
                 if "course" in request.data and uuid.UUID(request.data["course"]) != obj.course.id:
                     return False
                 return self.has_write_access(request)

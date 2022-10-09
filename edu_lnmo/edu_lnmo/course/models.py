@@ -2,6 +2,7 @@ from django.db.models import *
 from rest_framework.viewsets import ViewSet
 
 from ..common.models import CommonObject
+from ..education.models import EducationSpecialization
 from ..file.models import File
 from ..user.models import User
 
@@ -9,6 +10,16 @@ from ..user.models import User
 class Course(CommonObject):
     title = CharField(max_length=255, verbose_name="Название", blank=False)
     description = TextField(verbose_name="Описание")
+
+    for_class = CharField(max_length=10, verbose_name="Класс", blank=True)
+    for_specialization = ForeignKey(
+        EducationSpecialization,
+        verbose_name="Направление обучения",
+        related_name="courses",
+        on_delete=SET_NULL,
+        blank=True,
+        null=True
+    )
 
     logo = ForeignKey(File, related_name="logo", verbose_name="Логотип", blank=True, null=True, on_delete=SET_NULL)
     cover = ForeignKey(File, related_name="cover", verbose_name="Обложка", blank=True, null=True, on_delete=SET_NULL)
