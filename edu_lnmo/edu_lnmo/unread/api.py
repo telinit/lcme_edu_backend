@@ -3,16 +3,17 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import UnreadObject
+from ..util.rest import EduModelViewSet, EduModelSerializer
 
 
-class UnreadObjectSerializer(serializers.ModelSerializer):
-    class Meta:
+class UnreadObjectSerializer(EduModelSerializer):
+    class Meta(EduModelSerializer.Meta):
         model = UnreadObject
         fields = '__all__'
 
 
-class UnreadObjectViewSet(viewsets.ModelViewSet):
+class UnreadObjectViewSet(EduModelViewSet):
     queryset = UnreadObject.objects.all()
     serializer_class = UnreadObjectSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = []

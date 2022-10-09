@@ -1,7 +1,7 @@
 import base64
 
 from Crypto.Cipher import PKCS1_OAEP
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.db.models import *
 from django.db.models.signals import pre_save
@@ -22,6 +22,9 @@ def validate_password(pw):
 
 
 class User(AbstractUser, CommonObject):
+    class UserObjects(QuerySet, UserManager):
+        pass
+
     middle_name = CharField(verbose_name="Отчество", max_length=255, blank=True, null=True)
     birth_date  = DateField(verbose_name="Дата рождения", null=True, blank=True)
     avatar      = ImageField(verbose_name="Аватар", null=True, blank=True)
@@ -31,6 +34,8 @@ class User(AbstractUser, CommonObject):
     password    = CharField(_("password"), max_length=128, validators=[validate_password])
 
     children    = ManyToManyField("User", related_name="parents", verbose_name="Дети", blank=True)
+
+    objects: UserObjects
 
     def set_password(self, raw_password):
         cipher = PKCS1_OAEP.new(PASSWORD_PUB_KEY)

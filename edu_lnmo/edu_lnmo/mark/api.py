@@ -3,16 +3,17 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Mark
+from ..util.rest import EduModelViewSet, EduModelSerializer
 
 
-class MarkSerializer(serializers.ModelSerializer):
-    class Meta:
+class MarkSerializer(EduModelSerializer):
+    class Meta(EduModelSerializer.Meta):
         model = Mark
         fields = '__all__'
 
 
-class MarkViewSet(viewsets.ModelViewSet):
+class MarkViewSet(EduModelViewSet):
     queryset = Mark.objects.all()
     serializer_class = MarkSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = []

@@ -3,16 +3,17 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import File
+from ..util.rest import EduModelViewSet, EduModelSerializer
 
 
-class FileSerializer(serializers.ModelSerializer):
-    class Meta:
+class FileSerializer(EduModelSerializer):
+    class Meta(EduModelSerializer.Meta):
         model = File
         fields = '__all__'
 
 
-class FileViewSet(viewsets.ModelViewSet):
+class FileViewSet(EduModelViewSet):
     queryset = File.objects.all()
     serializer_class = FileSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = []

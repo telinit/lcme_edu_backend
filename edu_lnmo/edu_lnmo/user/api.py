@@ -7,18 +7,20 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, viewsets, permissions
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action, permission_classes
+from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST
 
 from .models import User
 from ..course.models import CourseEnrollment
+from ..util.rest import request_user_is_staff, EduModelViewSet, EduModelSerializer
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
+class UserSerializer(EduModelSerializer):
+    class Meta(EduModelSerializer.Meta):
         model = User
-        #fields = '__all__'
+        # fields = '__all__'
         exclude = ['password', 'pw_enc']
 
 
@@ -31,15 +33,30 @@ class SetPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=255)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(EduModelViewSet):
+    class UserPermissions(BasePermission):
+
+        def has_permission(self, request: Request, view: "UserViewSet"):
+            if view.action == "login":
+                return True
+            elif view.action == "create":
+                return request_user_is_staff(request)
+            elif view.action in ["list", "logout", "self", "set_password"]:
+                return request.user and request.user.is_authenticated
+            else:
+                return False
+
+        def has_object_permission(self, request: Request, view: "UserViewSet", obj):
+            if view.action == "retrieve":
+                return True
+            elif view.action in ["update", "partial_update", "destroy"]:
+                return request_user_is_staff(request)
+            else:
+                return False
+
     serializer_class = UserSerializer
     authentication_classes = [SessionAuthentication]
-
-    def get_permissions(self):
-        if self.action in ["login"]:
-            return [permissions.AllowAny()]
-        else:
-            return [permissions.IsAuthenticated()]
+    permission_classes = [UserPermissions]
 
     def get_queryset(self):
         u: User = self.request.user
@@ -65,7 +82,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
             return (u1 | u2 | u3 | u4).distinct()
 
-    @swagger_auto_schema(request_body=LoginSerializer, responses={200: 'Login succeeded. Cookies with a session key are set.', HTTP_403_FORBIDDEN: 'Wrong credentials'})
+    @swagger_auto_schema(request_body=LoginSerializer,
+                         responses={200: 'Login succeeded. Cookies with a session key are set.',
+                                    HTTP_403_FORBIDDEN: 'Wrong credentials'})
     @action(methods=['POST'], detail=False)
     def login(self, request: Request):
         user = authenticate(username=request.data["username"], password=request.data["password"])

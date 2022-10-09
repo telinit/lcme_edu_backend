@@ -13,7 +13,7 @@ from .user.api import UserViewSet
 api = routers.DefaultRouter()
 
 
-api.register(r'activity', ActivityViewSet)
+api.register(r'activity', ActivityViewSet, basename="Activity")
 
 api.register(r'course/enrollment', CourseEnrollmentViewSet)
 api.register(r'course', CourseViewSet)

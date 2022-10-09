@@ -3,29 +3,30 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Organization, Department
+from ..util.rest import EduModelViewSet, EduModelSerializer
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
-    class Meta:
+class OrganizationSerializer(EduModelSerializer):
+    class Meta(EduModelSerializer.Meta):
         model = Organization
         fields = '__all__'
 
 
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
+class DepartmentSerializer(EduModelSerializer):
+    class Meta(EduModelSerializer.Meta):
         model = Department
         fields = '__all__'
 
 
-class OrganizationViewSet(viewsets.ModelViewSet):
+class OrganizationViewSet(EduModelViewSet):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = []
 
 
-class DepartmentViewSet(viewsets.ModelViewSet):
+class DepartmentViewSet(EduModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = []

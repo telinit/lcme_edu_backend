@@ -16,7 +16,7 @@ class Activity(CommonObject):
     # TODO: Implement first
     type = CharField(choices=ActivityType.choices, default=ActivityType.GEN, max_length=3)
 
-    course              = ForeignKey(Course, verbose_name="Курс", on_delete=CASCADE)
+    course              = ForeignKey(Course, verbose_name="Курс", related_name="activities", on_delete=CASCADE)
 
     title               = CharField(max_length=255, verbose_name="Название", blank=False)
     keywords            = CharField(max_length=255, verbose_name="Кодовое название", blank=True)

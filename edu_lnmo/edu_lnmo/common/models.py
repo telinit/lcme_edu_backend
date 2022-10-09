@@ -1,6 +1,7 @@
 import uuid
 
 from django.db.models import *
+from django.db.models.manager import BaseManager
 
 
 class CommonObject(Model):
@@ -8,6 +9,8 @@ class CommonObject(Model):
         abstract = True
 
     id = UUIDField(primary_key=True, null=False, default=uuid.uuid4)
+
+    objects: QuerySet
 
 
 class Organization(CommonObject):

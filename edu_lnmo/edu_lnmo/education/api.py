@@ -3,29 +3,30 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Education, EducationSpecialization
+from ..util.rest import EduModelViewSet, EduModelSerializer
 
 
-class EducationSerializer(serializers.ModelSerializer):
-    class Meta:
+class EducationSerializer(EduModelSerializer):
+    class Meta(EduModelSerializer.Meta):
         model = Education
         fields = '__all__'
 
 
-class EducationSpecializationSerializer(serializers.ModelSerializer):
-    class Meta:
+class EducationSpecializationSerializer(EduModelSerializer):
+    class Meta(EduModelSerializer.Meta):
         model = EducationSpecialization
         fields = '__all__'
 
 
-class EducationViewSet(viewsets.ModelViewSet):
+class EducationViewSet(EduModelViewSet):
     queryset = Education.objects.all()
     serializer_class = EducationSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = []
 
 
-class EducationSpecializationViewSet(viewsets.ModelViewSet):
+class EducationSpecializationViewSet(EduModelViewSet):
     queryset = EducationSpecialization.objects.all()
     serializer_class = EducationSpecializationSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = []
