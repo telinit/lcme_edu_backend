@@ -21,8 +21,7 @@ class ActivitySerializer(EduModelSerializer):
 
 class ActivityViewSet(EduModelViewSet):
     class ActivityPermissions(BasePermission):
-        @classmethod
-        def has_write_access(cls, request: Request):
+        def has_write_access(self, request: Request):
             is_authenticated = request_user_is_authenticated(request)
             is_staff = lambda: request_user_is_staff(request)
             is_teacher = lambda: "course" in request.data and CourseEnrollment \
@@ -33,20 +32,22 @@ class ActivityViewSet(EduModelViewSet):
             return is_authenticated and (is_staff() or is_teacher())
 
         def has_permission(self, request: Request, view: "ActivityViewSet"):
-            if view.action == "list":
+            if view.action in ["list"]:
                 return True
-            elif view.action == "create":
+            elif view.action in ["create"]:
                 return self.has_write_access(request)
             else:
-                return False
+                return request_user_is_authenticated(request)
 
         def has_object_permission(self, request: Request, view: "ActivityViewSet", obj: Activity):
             if view.action == "retrieve":
                 return True
             elif view.action in ["update", "partial_update", "destroy"]:
+                if "course" in request.data and uuid.UUID(request.data["course"]) != obj.course.id:
+                    return False
                 return self.has_write_access(request)
             else:
-                return False
+                return request_user_is_authenticated(request)
 
     def get_queryset(self):
         u: User = self.request.user
