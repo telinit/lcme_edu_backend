@@ -21,8 +21,8 @@ class Course(CommonObject):
         null=True
     )
 
-    logo = ForeignKey(File, related_name="logo", verbose_name="Логотип", blank=True, null=True, on_delete=SET_NULL)
-    cover = ForeignKey(File, related_name="cover", verbose_name="Обложка", blank=True, null=True, on_delete=SET_NULL)
+    logo = ForeignKey(File, related_name="course_logos", verbose_name="Логотип", blank=True, null=True, on_delete=SET_NULL)
+    cover = ForeignKey(File, related_name="course_covers", verbose_name="Обложка", blank=True, null=True, on_delete=SET_NULL)
 
     def __str__(self):
         return f"{self.title}"
@@ -77,12 +77,22 @@ class CourseEnrollment(CommonObject):
         )
 
     @classmethod
-    def get_courses_of_student(cls, user):
-        return Course.objects.filter(
-            enrollments__role=cls.EnrollmentRole.student,
-            enrollments__finished_on__isnull=True,
-            enrollments__person=user
-        )
+    def get_courses_of_student(cls, user: User | QuerySet) -> QuerySet:
+        if isinstance(user, User):
+            return Course.objects.filter(
+                enrollments__role=cls.EnrollmentRole.student,
+                enrollments__finished_on__isnull=True,
+                enrollments__person=user
+            )
+        elif isinstance(user, QuerySet):
+            return Course.objects.filter(
+                enrollments__role=cls.EnrollmentRole.student,
+                enrollments__finished_on__isnull=True,
+                enrollments__person__in=user
+            )
+        else:
+            raise TypeError()
+
 
     @staticmethod
     def get_courses_of_user(user: User | QuerySet) -> QuerySet:

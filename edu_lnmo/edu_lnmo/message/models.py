@@ -10,7 +10,7 @@ class MessageContent(CommonObject):
         abstract = True
 
     body        = TextField(blank=True)
-    attachments = ManyToManyField(File, verbose_name="Вложения", blank=True)
+    attachments = ManyToManyField(File, verbose_name="Вложения", related_name="messages", blank=True)
 
 
 class Message(MessageContent):

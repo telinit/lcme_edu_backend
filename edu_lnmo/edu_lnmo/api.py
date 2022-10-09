@@ -15,24 +15,24 @@ api = routers.DefaultRouter()
 
 api.register(r'activity', ActivityViewSet, basename="Activity")
 
-api.register(r'course/enrollment', CourseEnrollmentViewSet)
-api.register(r'course', CourseViewSet)
+api.register(r'course/enrollment', CourseEnrollmentViewSet, basename="CourseEnrollment")
+api.register(r'course', CourseViewSet, basename="Course")
 
-api.register(r'common/organisation', OrganizationViewSet)
-api.register(r'common/department', DepartmentViewSet)
+api.register(r'common/organisation', OrganizationViewSet, basename="Organization")
+api.register(r'common/department', DepartmentViewSet, basename="Department")
 
-api.register(r'education/specialization', EducationSpecializationViewSet)
-api.register(r'education', EducationViewSet)
+api.register(r'education/specialization', EducationSpecializationViewSet, basename="EducationSpecialization")
+api.register(r'education', EducationViewSet, basename="Education")
 
-api.register(r'file', FileViewSet)
+api.register(r'file', FileViewSet, basename="File")
 
-api.register(r'mark', MarkViewSet)
+api.register(r'mark', MarkViewSet, basename="Mark")
 
-api.register(r'message/private', MessagePrivateViewSet)
-api.register(r'message/task', MessageTaskSubmissionViewSet)
-api.register(r'message/news', MessageNewsViewSet)
-api.register(r'message', MessageViewSet)
+api.register(r'message/private', MessagePrivateViewSet, basename="MessagePrivate")
+api.register(r'message/task', MessageTaskSubmissionViewSet, basename="MessageTaskSubmission")
+api.register(r'message/news', MessageNewsViewSet, basename="MessageNews")
+api.register(r'message', MessageViewSet, basename="Message")
 
-api.register(r'unread', UnreadObjectViewSet)
+api.register(r'unread', UnreadObjectViewSet, basename="UnreadObject")
 
 api.register(r'user', UserViewSet, basename="User")

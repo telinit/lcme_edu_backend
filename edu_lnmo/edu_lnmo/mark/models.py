@@ -12,8 +12,8 @@ class Mark(CommonObject):
     value   = CharField(max_length=255, verbose_name="Значение", blank=False, null=False)
     comment = TextField(verbose_name="Коментарий", blank=True)
 
-    activity = ForeignKey(Activity, verbose_name="Активность", on_delete=CASCADE)
-    course = ForeignKey(Course, verbose_name="Курс", on_delete=CASCADE)
+    activity = ForeignKey(Activity, verbose_name="Активность", related_name="marks", on_delete=CASCADE)
+    course = ForeignKey(Course, verbose_name="Курс", related_name="marks", on_delete=CASCADE)
 
     class FinalType(TextChoices):
         Q1 = 'Q1', "1 четверть"
@@ -37,3 +37,12 @@ class Mark(CommonObject):
     def __str__(self):
         fin = f", {FinalType[self.final_type].label}" if self.final_type else ""
         return f"{self.student}: {self.activity or self.course} ({self.value}{fin})"
+
+    def get_activity(self):
+        return Activity.objects.filter(marks__id=self.id)
+
+    def get_course(self):
+        if self.course:
+            return Course.objects.filter(id=self.course.id)
+        else:
+            return Course.objects.filter(activities__id=self.activity.id)

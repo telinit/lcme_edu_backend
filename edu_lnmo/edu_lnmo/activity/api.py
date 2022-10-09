@@ -18,6 +18,8 @@ class ActivitySerializer(EduModelSerializer):
         model = Activity
         fields = '__all__'
 
+    # TODO: Validate
+
 
 class ActivityViewSet(EduModelViewSet):
     class ActivityPermissions(BasePermission):

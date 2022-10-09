@@ -3,6 +3,7 @@ from django.db.models import *
 from ..common.models import CommonObject
 from ..course.models import Course
 from ..file.models import File
+from ..mark.models import Mark
 
 
 class Activity(CommonObject):
@@ -30,7 +31,7 @@ class Activity(CommonObject):
     group               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)
 
     body = TextField(blank=True)
-    files = ManyToManyField(File, verbose_name="Вложения/файлы", blank=True)
+    files = ManyToManyField(File, verbose_name="Вложения/файлы", related_name="activities", blank=True)
 
     due_date = DateTimeField(verbose_name="Срок сдачи", null=True, blank=True)
 
@@ -39,3 +40,6 @@ class Activity(CommonObject):
 
     def __str__(self):
         return f"{self.course}: {self.order}. {self.title}"
+
+    def can_add_more_marks(self):
+        return Mark.objects.filter(activity=self).count() < self.marks_limit
