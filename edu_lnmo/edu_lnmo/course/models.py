@@ -20,12 +20,14 @@ class Course(CommonObject):
         blank=True,
         null=True
     )
+    for_group = CharField(verbose_name="Группа", max_length=255, null=True, blank=True)
 
     logo = ForeignKey(File, related_name="course_logos", verbose_name="Логотип", blank=True, null=True, on_delete=SET_NULL)
     cover = ForeignKey(File, related_name="course_covers", verbose_name="Обложка", blank=True, null=True, on_delete=SET_NULL)
 
     def __str__(self):
-        return f"{self.title}"
+        info = ", ".join([*filter(lambda x:x, [str(self.for_specialization), self.for_class, self.for_group])])
+        return f"{self.title}" + (f" ({info})" if info else "")
 
     @property
     def teachers(self):
@@ -64,9 +66,11 @@ class CourseEnrollment(CommonObject):
 
     person = ForeignKey(User, verbose_name="Пользователь", related_name="enrollments", on_delete=CASCADE)
     course = ForeignKey(Course, verbose_name="Курс", related_name="enrollments", on_delete=CASCADE)
-    group = CharField(verbose_name="Группа", max_length=255, null=True, blank=True)
     role = CharField(choices=EnrollmentRole.choices, max_length=3)
     finished_on = DateTimeField(verbose_name="Завершена", null=True)
+
+    def __str__(self):
+        return f"{self.role}: {self.person.full_name()} -> {self.course}"
 
     @classmethod
     def get_courses_of_teacher(cls, user) -> QuerySet:

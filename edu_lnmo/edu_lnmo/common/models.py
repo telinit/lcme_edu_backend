@@ -15,9 +15,10 @@ class CommonObject(Model):
 
 class Organization(CommonObject):
     name = CharField(verbose_name="Название", max_length=255)
+    name_short = CharField(verbose_name="Короткое название", max_length=255, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name_short}"
 
 
 class Department(CommonObject):

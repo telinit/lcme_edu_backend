@@ -3,7 +3,6 @@ from django.db.models import *
 from ..common.models import CommonObject
 from ..course.models import Course
 from ..file.models import File
-from ..mark.models import Mark
 
 
 class Activity(CommonObject):
@@ -40,6 +39,3 @@ class Activity(CommonObject):
 
     def __str__(self):
         return f"{self.course}: {self.order}. {self.title}"
-
-    def can_add_more_marks(self):
-        return Mark.objects.filter(activity=self).count() < self.marks_limit

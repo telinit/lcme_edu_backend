@@ -37,12 +37,3 @@ class Mark(CommonObject):
     def __str__(self):
         fin = f", {FinalType[self.final_type].label}" if self.final_type else ""
         return f"{self.student}: {self.activity or self.course} ({self.value}{fin})"
-
-    def get_activity(self):
-        return Activity.objects.filter(marks__id=self.id)
-
-    def get_course(self):
-        if self.course:
-            return Course.objects.filter(id=self.course.id)
-        else:
-            return Course.objects.filter(activities__id=self.activity.id)
