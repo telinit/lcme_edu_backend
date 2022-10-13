@@ -18,8 +18,8 @@ class Education(CommonObject):
     started         = DateField(verbose_name="Дата поступления")
     finished        = DateField(verbose_name="Дата завершения", null=True, blank=True)
 
-    starting_class  = IntegerField(verbose_name="Класс поступления")
-    finishing_class = IntegerField(verbose_name="Класс завершения", null=True, blank=True)
+    starting_class  = CharField(max_length=10, verbose_name="Класс поступления")
+    finishing_class = CharField(max_length=10, verbose_name="Класс завершения", null=True, blank=True)
 
     #department      = ForeignKey(Department, verbose_name="Подразделение")
     specialization  = ForeignKey(

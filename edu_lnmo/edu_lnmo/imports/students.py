@@ -1,11 +1,22 @@
+import datetime
 from csv import DictReader
+from typing import Tuple, Any
 
+from .user import generate_password
 from ..common.models import Organization, Department
 from ..course.models import Course, CourseEnrollment
-from ..education.models import EducationSpecialization
+from ..education.models import EducationSpecialization, Education
 from ..imports.base import CSVDataImporter
 from ..imports.user import create_user
 from ..user.models import User
+
+
+class StudentsImportResult(object):
+    objects = []
+    report_rows = [["Фамилия","Имя","Отчество","Направление обучения","Класс","Родитель?","Логин","Пароль"]]
+
+    def save_report(self, file_name: str):
+        open(file_name, "w").writelines(map(lambda ws: ",".join(ws) + "\n", self.report_rows))
 
 
 class StudentsDataImporter(CSVDataImporter):
@@ -20,7 +31,8 @@ class StudentsDataImporter(CSVDataImporter):
 
     def do_import(self, data: str):
         r = DictReader(data.splitlines())
-        res = []
+        res = StudentsImportResult()
+        users = {}
         for rec in r:
             last_name = rec["Фамилия учащегося"].strip()
             first_name = rec["Имя учащегося"].strip()
@@ -37,7 +49,7 @@ class StudentsDataImporter(CSVDataImporter):
                 organization=org,
                 name="Общая площадка"
             )
-            spec, _ = EducationSpecialization.objects.get_or_create(
+            spec, _= EducationSpecialization.objects.get_or_create(
                 name=rec["Направление"].strip(),
                 department=dep
             )
@@ -58,9 +70,17 @@ class StudentsDataImporter(CSVDataImporter):
                 rec["Фамилия родителя 2"].strip()
             )
 
+            edu, _ = Education.objects.get_or_create(
+                student=student,
+                started=datetime.date((datetime.date.today() - datetime.timedelta(days=31*6)).year, 9, 1),
+                starting_class=rec["Класс"].strip(),
+                specialization=spec
+            )
+
             courses = Course.objects.filter(
                 for_class=rec["Класс"].strip(),
-                for_group=""
+                for_group="",
+                for_specialization=spec
             )
 
             course_enrollments = []
@@ -73,6 +93,29 @@ class StudentsDataImporter(CSVDataImporter):
                     finished_on=None
                 )
 
-            res += [org, dep, spec, student, parent1, parent2] + course_enrollments
+            res.objects += [org, dep, spec, student, parent1, parent2] + course_enrollments
+
+            for t in [(student, False, spec, edu), (parent1, True, spec, edu), (parent2, True, spec, edu)]:
+                u = t[0]
+                if u is None:
+                    continue
+                k = u.full_name()
+                if k not in users:
+                    users[k] = t
+
+        for user, is_parent, spec, edu in users.values():
+            pw = generate_password()
+            user.set_password(pw)
+            user.save()
+            res.report_rows += [[
+                user.last_name,
+                user.first_name,
+                user.middle_name,
+                spec.name,
+                edu.starting_class,
+                "Да" if is_parent else "Нет",
+                user.username,
+                pw
+            ]]
 
         return res

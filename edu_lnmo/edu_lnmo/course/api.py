@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AnonymousUser
 from rest_framework import serializers, viewsets, permissions
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -49,7 +49,7 @@ class CourseViewSet(EduModelViewSet):
             return CourseEnrollment.get_courses_of_user(users)
 
     serializer_class = CourseSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [CoursePermissions]
 
 
@@ -79,5 +79,5 @@ class CourseEnrollmentViewSet(EduModelViewSet):
             return CourseEnrollment.objects.filter(person=u)
 
     serializer_class = CourseEnrollmentSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [CourseEnrollmentPermissions]

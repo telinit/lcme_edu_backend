@@ -3,7 +3,7 @@ import uuid
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import QuerySet
 from rest_framework import viewsets, serializers, permissions
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 
@@ -57,8 +57,14 @@ class ActivityViewSet(EduModelViewSet):
         else:
             users: QuerySet = User.objects.filter(id=u.id) | u.children.all()
             courses: QuerySet = CourseEnrollment.get_courses_of_user(users)
-            return courses.activities.all()
+            if not courses:
+                return []
+            else:
+                activities = courses[0].activities.all()
+                for c in courses[1:]:
+                    activities |= c.activities.all()
+                return activities
 
     serializer_class = ActivitySerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [ActivityPermissions]

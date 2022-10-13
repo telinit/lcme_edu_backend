@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AnonymousUser
 from rest_framework import viewsets, serializers, permissions
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -42,5 +42,5 @@ class UnreadObjectViewSet(EduModelViewSet):
             return UnreadObject.objects.filter(user=u)
 
     serializer_class = UnreadObjectSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [UnreadObjectPermissions]

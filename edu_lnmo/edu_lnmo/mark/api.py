@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q, QuerySet
 from rest_framework import permissions, viewsets, serializers
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -11,6 +11,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Mark
 from ..activity.models import Activity
 from ..course.models import CourseEnrollment, Course
+from ..user.models import User
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated
 
 
@@ -108,5 +109,5 @@ class MarkViewSet(EduModelViewSet):
             return Mark.objects.filter(q1 | q2 | q3 | q4)
 
     serializer_class = MarkSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [MarkPermissions]

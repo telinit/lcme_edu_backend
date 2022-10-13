@@ -3,6 +3,7 @@ import random
 from django.db.models import Q
 from transliterate import translit
 
+from ..education.models import Education
 from ..user.models import User
 
 def generate_username(first_name, middle_name, last_name) -> str:

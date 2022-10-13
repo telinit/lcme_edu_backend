@@ -1,5 +1,5 @@
 from rest_framework import serializers, viewsets, permissions
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -38,7 +38,7 @@ class OrganizationViewSet(EduModelViewSet):
 
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [OrganizationPermissions]
 
 
@@ -59,5 +59,5 @@ class DepartmentViewSet(EduModelViewSet):
 
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [DepartmentPermissions]

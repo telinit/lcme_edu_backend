@@ -10,6 +10,6 @@ u.username="admin";
 u.set_password("admin");
 u.is_staff=True;
 u.is_superuser=True;
-u.id="11111111-1111-1111-1111-111111111111";
+u.first_name="Админ"
 u.save()
 EOF

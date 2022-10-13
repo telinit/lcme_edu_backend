@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q
 from rest_framework import permissions, viewsets, serializers
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -63,7 +63,7 @@ class MessageViewSet(EduModelViewSet):  # TODO: Secure
             return Message.objects.filter(sender=u)
 
     serializer_class = MessageSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [MessagePermissions]
 
 
@@ -97,7 +97,7 @@ class MessagePrivateViewSet(EduModelViewSet):  # TODO: Secure
             return MessagePrivate.objects.filter(Q(sender=u) | Q(receiver=u))
 
     serializer_class = MessagePrivateSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [MessagePrivatePermissions]
 
 
@@ -131,7 +131,7 @@ class MessageTaskSubmissionViewSet(EduModelViewSet):  # TODO: Secure
             return MessageTaskSubmission.objects.filter(Q(sender=u) | Q(receiver=u))
 
     serializer_class = MessageTaskSubmissionSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [MessageTaskSubmissionPermissions]
 
 
@@ -153,5 +153,5 @@ class MessageNewsViewSet(EduModelViewSet):
 
     queryset = MessageNews.objects.all()
     serializer_class = MessageNewsSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [MessageNewsPermissions]

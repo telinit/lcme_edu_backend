@@ -2,14 +2,17 @@ import uuid
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import AnonymousUser
+from django.db.migrations import serializer
 from django.db.models import Q, F
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, viewsets, permissions
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST
 
 from .models import User
@@ -31,6 +34,16 @@ class LoginSerializer(serializers.Serializer):
 
 class SetPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=255)
+
+
+class TokenSerializer(serializers.Serializer):
+    user = UserSerializer()
+    key = serializers.CharField(max_length=40)
+
+    class Meta(EduModelSerializer.Meta):
+        model = Token
+        fields = "__all__"
+        depth = 1
 
 
 class UserViewSet(EduModelViewSet):
@@ -55,7 +68,7 @@ class UserViewSet(EduModelViewSet):
                 return False
 
     serializer_class = UserSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [UserPermissions]
 
     def get_queryset(self):
@@ -83,14 +96,16 @@ class UserViewSet(EduModelViewSet):
             return (u1 | u2 | u3 | u4).distinct()
 
     @swagger_auto_schema(request_body=LoginSerializer,
-                         responses={200: 'Login succeeded. Cookies with a session key are set.',
+                         responses={200: TokenSerializer,
                                     HTTP_403_FORBIDDEN: 'Wrong credentials'})
     @action(methods=['POST'], detail=False)
     def login(self, request: Request):
         user = authenticate(username=request.data["username"], password=request.data["password"])
         if user is not None:
             login(request, user)
-            return Response()
+            Token.objects.filter(user=user).delete()
+            new_token = Token.objects.create(user=user)
+            return Response(TokenSerializer({"key": new_token.key, "user": new_token.user}).data)
         else:
             return Response('Wrong credentials', status=HTTP_403_FORBIDDEN)
 
