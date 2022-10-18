@@ -111,5 +111,5 @@ class CourseEnrollmentViewSet(EduModelViewSet):
             return CourseEnrollment.objects.filter(person=u)
 
     serializer_class = CourseEnrollmentSerializer
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [CourseEnrollmentPermissions]
