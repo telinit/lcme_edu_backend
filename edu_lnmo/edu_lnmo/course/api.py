@@ -6,11 +6,36 @@ from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Course, CourseEnrollment
+from ..education.api import EducationSpecializationSerializer
+from ..file.api import FileSerializer
 from ..user.models import User
-from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated
+from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated, \
+    EduModelReadSerializer, EduModelWriteSerializer
+
+
+class CourseReadSerializer(EduModelReadSerializer):
+    for_specialization = EducationSpecializationSerializer(allow_null=True)
+    logo = FileSerializer(allow_null=True)
+    cover = FileSerializer(allow_null=True)
+
+    class Meta(EduModelSerializer.Meta):
+        model = Course
+        fields = '__all__'
+        depth = 1
+
+
+class CourseWriteSerializer(EduModelWriteSerializer):
+    class Meta(EduModelSerializer.Meta):
+        model = Course
+        fields = '__all__'
+        depth = 0
 
 
 class CourseSerializer(EduModelSerializer):
+    # for_specialization = EducationSpecializationSerializer()
+    # logo = FileSerializer()
+    # cover = FileSerializer()
+
     class Meta(EduModelSerializer.Meta):
         model = Course
         fields = '__all__'
@@ -48,6 +73,13 @@ class CourseViewSet(EduModelViewSet):
             users = User.objects.filter(id=u.id) | u.children.all()
             return CourseEnrollment.get_courses_of_user(users)
 
+    def get_serializer_class(self):
+        method = self.request.method
+        if method == 'PUT' or method == 'POST':
+            return CourseWriteSerializer
+        else:
+            return CourseReadSerializer
+
     serializer_class = CourseSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [CoursePermissions]
@@ -79,5 +111,5 @@ class CourseEnrollmentViewSet(EduModelViewSet):
             return CourseEnrollment.objects.filter(person=u)
 
     serializer_class = CourseEnrollmentSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
     permission_classes = [CourseEnrollmentPermissions]
