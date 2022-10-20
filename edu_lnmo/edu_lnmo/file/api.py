@@ -2,8 +2,10 @@ from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q
 from rest_framework import permissions, viewsets, serializers
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.fields import SerializerMethodField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
+from rest_framework.reverse import reverse
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import File
