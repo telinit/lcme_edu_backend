@@ -1,9 +1,13 @@
 from django.contrib.auth.models import AnonymousUser
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, viewsets, permissions
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Course, CourseEnrollment
@@ -30,7 +34,7 @@ class CourseEnrollmentWriteSerializer(EduModelWriteSerializer):
         depth = 0
 
 
-class CourseReadSerializer(EduModelReadSerializer):
+class CourseDeepSerializer(EduModelReadSerializer):
     for_specialization = EducationSpecializationSerializer(allow_null=True)
     logo = FileSerializer(allow_null=True)
     cover = FileSerializer(allow_null=True)
@@ -45,21 +49,11 @@ class CourseReadSerializer(EduModelReadSerializer):
         depth = 1
 
 
-class CourseWriteSerializer(EduModelWriteSerializer):
+class CourseShallowSerializer(EduModelWriteSerializer):
     class Meta(EduModelSerializer.Meta):
         model = Course
         fields = '__all__'
         depth = 0
-
-
-class CourseSerializer(EduModelSerializer):
-    # for_specialization = EducationSpecializationSerializer()
-    # logo = FileSerializer()
-    # cover = FileSerializer()
-
-    class Meta(EduModelSerializer.Meta):
-        model = Course
-        fields = '__all__'
 
 
 class CourseViewSet(EduModelViewSet):
@@ -76,6 +70,24 @@ class CourseViewSet(EduModelViewSet):
                 return request_user_is_staff(request)
             else:
                 return request_user_is_authenticated(request)
+
+    @swagger_auto_schema(responses={200: CourseDeepSerializer()})
+    @action(methods=['GET'], detail=True, url_path='(?P<id>[^/.]+)/deep')
+    def get_deep(self, id_, request: Request):
+        obj = self.get_queryset().filter(id=id_)
+        if not obj:
+            return Response(status=HTTP_404_NOT_FOUND)
+        else:
+            obj = obj.get()
+            ser = CourseDeepSerializer(obj)
+            return Response(ser.data)
+
+    @swagger_auto_schema(responses={200: CourseDeepSerializer()})
+    @action(methods=['GET'], detail=False, url_path='deep')
+    def list_deep(self, request: Request):
+        obj = self.get_queryset()
+        ser = CourseDeepSerializer(obj, many=True)
+        return Response(ser.data)
 
     def get_queryset(self):
         u: User = self.request.user
@@ -94,14 +106,7 @@ class CourseViewSet(EduModelViewSet):
             users = User.objects.filter(id=u.id) | u.children.all()
             return CourseEnrollment.get_courses_of_user(users)
 
-    def get_serializer_class(self):
-        method = self.request.method
-        if method == 'PUT' or method == 'POST':
-            return CourseWriteSerializer
-        else:
-            return CourseReadSerializer
-
-    serializer_class = CourseSerializer
+    serializer_class = CourseShallowSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [CoursePermissions]
     filterset_fields = ['for_specialization', 'for_group', 'for_class']

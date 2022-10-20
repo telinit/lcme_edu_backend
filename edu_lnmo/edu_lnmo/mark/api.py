@@ -47,7 +47,7 @@ class MarkViewSet(EduModelViewSet):
 
                     activity: Activity = activity[0]
 
-                    if not activity.can_add_more_marks():
+                    if Mark.objects.filter(activity=activity).count() >= activity.marks_limit:
                         return False
 
                     course = Course.objects.filter(id=activity.course.id)
