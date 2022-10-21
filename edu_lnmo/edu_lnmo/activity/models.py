@@ -25,7 +25,7 @@ class Activity(CommonObject):
     is_hidden           = BooleanField(verbose_name="Скрыта", default=False)
     marks_limit         = IntegerField(verbose_name="Лимит оценок", default=1)
 
-    order               = IntegerField(verbose_name="Номер в списке курса")
+    order               = IntegerField(verbose_name="Номер в списке курса", unique=True)
     date                = DateField(verbose_name="Дата проведения")
     # TODO: Implement later
     group               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)
