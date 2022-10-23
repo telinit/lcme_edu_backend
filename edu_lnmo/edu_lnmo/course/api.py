@@ -72,9 +72,9 @@ class CourseViewSet(EduModelViewSet):
                 return request_user_is_authenticated(request)
 
     @swagger_auto_schema(responses={200: CourseDeepSerializer()})
-    @action(methods=['GET'], detail=True, url_path='(?P<id>[^/.]+)/deep')
-    def get_deep(self, id_, request: Request):
-        obj = self.get_queryset().filter(id=id_)
+    @action(methods=['GET'], detail=True, url_path='deep')
+    def get_deep(self, request: Request, pk, *args, **kwargs):
+        obj = self.get_queryset().filter(id=pk)
         if not obj:
             return Response(status=HTTP_404_NOT_FOUND)
         else:
@@ -84,7 +84,7 @@ class CourseViewSet(EduModelViewSet):
 
     @swagger_auto_schema(responses={200: CourseDeepSerializer()})
     @action(methods=['GET'], detail=False, url_path='deep')
-    def list_deep(self, request: Request):
+    def list_deep(self, request: Request, *args, **kwargs):
         obj = self.get_queryset()
         ser = CourseDeepSerializer(obj, many=True)
         return Response(ser.data)
@@ -101,16 +101,16 @@ class CourseViewSet(EduModelViewSet):
                 "cover",
                 "activities",
                 "enrollments"
-            ).all()
+            ).distinct().all()
         else:
             users = User.objects.filter(id=u.id) | u.children.all()
-            return CourseEnrollment.get_courses_of_user(users)
+            return CourseEnrollment.get_courses_of_user(users).distinct()
 
     serializer_class = CourseShallowSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [CoursePermissions]
-    filterset_fields = ['for_specialization', 'for_group', 'for_class']
-    search_fields = ['title', 'description']
+    filterset_fields = ["for_specialization", "for_group", "for_class", "enrollments__person", "enrollments__role"]
+    search_fields = ["title", "description"]
 
 
 class CourseEnrollmentViewSet(EduModelViewSet):

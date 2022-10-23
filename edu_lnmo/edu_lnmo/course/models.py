@@ -67,7 +67,7 @@ class CourseEnrollment(CommonObject):
     person = ForeignKey(User, verbose_name="Пользователь", related_name="enrollments", on_delete=CASCADE)
     course = ForeignKey(Course, verbose_name="Курс", related_name="enrollments", on_delete=CASCADE)
     role = CharField(choices=EnrollmentRole.choices, max_length=3)
-    finished_on = DateTimeField(verbose_name="Завершена", null=True)
+    finished_on = DateTimeField(verbose_name="Завершена", null=True, blank=True)
 
     def __str__(self):
         return f"{self.role}: {self.person.full_name()} -> {self.course}"
