@@ -9,6 +9,7 @@ from rest_framework import serializers, viewsets, permissions
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action, permission_classes
+from rest_framework.fields import SerializerMethodField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -21,6 +22,30 @@ from ..util.rest import request_user_is_staff, EduModelViewSet, EduModelSerializ
 
 
 class UserSerializer(EduModelSerializer):
+    roles = SerializerMethodField(method_name="get_roles", read_only=True, help_text="List of user's roles. A set of: admin, staff, teacher, student, parent")
+
+    def get_roles(self, obj, *args, **kwargs) -> list[str]:
+        u: User = obj
+
+        res = []
+
+        if u.children.all().count() > 0:
+            res += ["parent"]
+
+        if u.enrollments.filter(role=CourseEnrollment.EnrollmentRole.student).count() > 0:
+            res += ["student"]
+
+        if u.enrollments.filter(role=CourseEnrollment.EnrollmentRole.teacher).count() > 0:
+            res += ["teacher"]
+
+        if u.is_staff:
+            res += ["staff"]
+
+        if u.is_superuser:
+            res += ["admin"]
+
+        return res
+
     class Meta(EduModelSerializer.Meta):
         model = User
         # fields = '__all__'

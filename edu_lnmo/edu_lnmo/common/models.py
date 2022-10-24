@@ -9,6 +9,8 @@ class CommonObject(Model):
         abstract = True
 
     id = UUIDField(primary_key=True, null=False, default=uuid.uuid4)
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
 
     objects: QuerySet
 

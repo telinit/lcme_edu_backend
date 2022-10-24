@@ -114,21 +114,23 @@ class CourseEnrollment(CommonObject):
             raise TypeError()
 
     @classmethod
-    def get_students_of_courses(cls, courses):
+    def get_students_of_courses(cls, courses, **more_user_filters):
         return User.objects.filter(
             enrollments__person=F("id"),
             enrollments__role=cls.EnrollmentRole.student,
             enrollments__course__in=courses,
-            enrollments__finished_on__isnull=True
+            enrollments__finished_on__isnull=True,
+            **more_user_filters
         )
 
     @classmethod
-    def get_teachers_of_courses(cls, courses):
+    def get_teachers_of_courses(cls, courses, **more_user_filters):
         return User.objects.filter(
             enrollments__person=F("id"),
             enrollments__role=cls.EnrollmentRole.teacher,
             enrollments__course__in=courses,
-            enrollments__finished_on__isnull=True
+            enrollments__finished_on__isnull=True,
+            **more_user_filters
         )
 
     @classmethod

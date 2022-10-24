@@ -38,7 +38,7 @@ class MarkViewSet(EduModelViewSet):
                     return False
                 elif "activity" in request.data:
                     activity: QuerySet = Activity.objects\
-                        .select_related("marks", "course")\
+                        .select_related("course")\
                         .filter(id=UUID(request.data["activity"]))
                     student = User(id=UUID(request.data["student"]))
 
@@ -47,16 +47,14 @@ class MarkViewSet(EduModelViewSet):
 
                     activity: Activity = activity[0]
 
-                    if Mark.objects.filter(activity=activity).count() >= activity.marks_limit:
+                    if Mark.objects.filter(activity=activity, student=student).count() >= activity.marks_limit:
                         return False
 
                     course = Course.objects.filter(id=activity.course.id)
                     teachers = CourseEnrollment\
-                        .get_teachers_of_courses(course)\
-                        .filter(person=request.user)
+                        .get_teachers_of_courses(course, id=request.user.id)
                     students = CourseEnrollment\
-                        .get_students_of_courses(course)\
-                        .filter(person=student)
+                        .get_students_of_courses(course, id=student.id)
 
                     if teachers.exists() and students.exists():
                         return True

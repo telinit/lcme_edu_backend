@@ -14,6 +14,12 @@ from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_sta
 
 
 class FileSerializer(EduModelSerializer):
+
+    download_url = SerializerMethodField("get_download_url", read_only=True)
+
+    def get_download_url(self):
+        return f"/api/file/{self.id}/download"
+
     class Meta(EduModelSerializer.Meta):
         model = File
         fields = '__all__'
