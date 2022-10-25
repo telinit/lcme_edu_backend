@@ -14,13 +14,13 @@ from .models import Course, CourseEnrollment
 from ..activity.api import ActivitySerializer
 from ..education.api import EducationSpecializationSerializer
 from ..file.api import FileSerializer
-from ..user.api import UserSerializer
+from ..user.api import UserShallowSerializer
 from ..user.models import User
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated, \
     EduModelReadSerializer, EduModelWriteSerializer
 
 class CourseEnrollmentReadSerializer(EduModelReadSerializer):
-    person = UserSerializer()
+    person = UserShallowSerializer()
     class Meta(EduModelSerializer.Meta):
         model = CourseEnrollment
         fields = '__all__'
@@ -136,7 +136,7 @@ class CourseEnrollmentViewSet(EduModelViewSet):
         elif u.is_staff or u.is_superuser:
             return CourseEnrollment.objects.all()
         else:
-            return CourseEnrollment.objects.filter(person=u)
+            return CourseEnrollment.objects.filter(Q(person=u) | Q(person__in=u.children))
 
     def get_serializer_class(self):
         method = self.request.method

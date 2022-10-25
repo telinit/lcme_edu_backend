@@ -21,7 +21,7 @@ from ..course.models import CourseEnrollment
 from ..util.rest import request_user_is_staff, EduModelViewSet, EduModelSerializer
 
 
-class UserSerializer(EduModelSerializer):
+class UserShallowSerializer(EduModelSerializer):
     roles = SerializerMethodField(method_name="get_roles", read_only=True, help_text="List of user's roles. A set of: admin, staff, teacher, student, parent")
 
     def get_roles(self, obj, *args, **kwargs) -> list[str]:
@@ -52,6 +52,12 @@ class UserSerializer(EduModelSerializer):
         exclude = ['password', 'pw_enc']
 
 
+class UserDeepSerializer(UserShallowSerializer):
+    children = UserShallowSerializer(many=True)
+    class Meta(UserShallowSerializer.Meta):
+        depth = 1
+
+
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=255)
@@ -62,7 +68,7 @@ class SetPasswordSerializer(serializers.Serializer):
 
 
 class TokenSerializer(serializers.Serializer):
-    user = UserSerializer()
+    user = UserDeepSerializer()
     key = serializers.CharField(max_length=40)
 
     class Meta(EduModelSerializer.Meta):
@@ -92,7 +98,7 @@ class UserViewSet(EduModelViewSet):
             else:
                 return False
 
-    serializer_class = UserSerializer
+    serializer_class = UserShallowSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [UserPermissions]
 
@@ -152,7 +158,7 @@ class UserViewSet(EduModelViewSet):
         request.user.save()
         return Response()
 
-    @swagger_auto_schema(responses={200: UserSerializer})
+    @swagger_auto_schema(responses={200: UserDeepSerializer})
     @action(methods=['GET'], detail=False)
     def self(self, request: Request):
-        return Response(UserSerializer(request.user).data)
+        return Response(UserDeepSerializer(request.user).data)

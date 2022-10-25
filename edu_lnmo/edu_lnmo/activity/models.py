@@ -38,6 +38,11 @@ class Activity(CommonObject):
     link = URLField(verbose_name="Ссылка", null=True, blank=True)
     embed = BooleanField(default=True, verbose_name="Встроена")
 
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['course', 'order'], name='unique activity order in course')
+        ]
+
     class FinalType(TextChoices):
         Q1 = 'Q1', "1 четверть"
         Q2 = 'Q2', "2 четверть"

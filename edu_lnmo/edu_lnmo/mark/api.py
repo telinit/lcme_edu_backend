@@ -36,6 +36,8 @@ class MarkViewSet(EduModelViewSet):
             if view.action == "create":  # TODO: Refactor this
                 if not request_user_is_authenticated(request):
                     return False
+                elif request_user_is_staff(request):
+                    return True
                 elif "activity" in request.data:
                     activity: QuerySet = Activity.objects\
                         .select_related("course")\
@@ -75,7 +77,7 @@ class MarkViewSet(EduModelViewSet):
                 else:
                     return False
 
-                return request_user_is_staff(request)
+                return False
             else:
                 return request_user_is_authenticated(request)
 
@@ -101,10 +103,9 @@ class MarkViewSet(EduModelViewSet):
 
             courses = CourseEnrollment.get_courses_of_user(users)
 
-            q3 = Q(course__in=courses)
-            q4 = Q(activity__course__in=courses)
+            q3 = Q(activity__course__in=courses)
 
-            return Mark.objects.filter(q1 | q2 | q3 | q4)
+            return Mark.objects.filter(q1 | q2 | q3)
 
     serializer_class = MarkSerializer
     authentication_classes = [TokenAuthentication]
