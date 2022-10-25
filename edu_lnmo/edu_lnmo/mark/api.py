@@ -84,7 +84,7 @@ class MarkViewSet(EduModelViewSet):
         def has_object_permission(self, request: Request, view: "MarkViewSet", obj: Mark):
             if view.action in ["update", "partial_update", "destroy"]:
                 return request_user_is_staff(request) or \
-                       CourseEnrollment.get_teachers_of_courses( obj.get_course() ).filter(id=request.user.id).exists()
+                       CourseEnrollment.get_teachers_of_courses( [obj.activity.course ]).filter(id=request.user.id).exists()
             else:
                 return request_user_is_authenticated(request)
 
