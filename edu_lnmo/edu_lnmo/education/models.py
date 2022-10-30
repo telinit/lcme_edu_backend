@@ -1,3 +1,6 @@
+import datetime
+import re
+
 from django.db.models import *
 
 from ..common.models import Department, CommonObject
@@ -31,3 +34,14 @@ class Education(CommonObject):
 
     def __str__(self):
         return f"{self.student}: {self.started} ({self.starting_class}) - {self.finished} ({self.finishing_class})"
+
+    def get_current_class(self):
+        year = datetime.date.today().year
+        y_diff = year - self.started.year
+
+        m: Match = re.match(r"(\d+)(.*)", self.starting_class)
+
+        if not m:
+            return str(5 + y_diff)
+        else:
+            return str(int(m[1]) + y_diff) + m[2]

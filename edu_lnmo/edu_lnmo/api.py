@@ -7,6 +7,7 @@ from .education.api import EducationSpecializationViewSet, EducationViewSet
 from .file.api import FileViewSet
 from .mark.api import MarkViewSet
 from .message.api import MessageNewsViewSet, MessageViewSet, MessageTaskSubmissionViewSet, MessagePrivateViewSet
+from .stats.api import StatsViewSet
 from .unread.api import UnreadObjectViewSet
 from .user.api import UserViewSet
 
@@ -36,3 +37,5 @@ api.register(r'message', MessageViewSet, basename="Message")
 api.register(r'unread', UnreadObjectViewSet, basename="UnreadObject")
 
 api.register(r'user', UserViewSet, basename="User")
+
+api.register(r'stats', StatsViewSet, basename="Stats")
