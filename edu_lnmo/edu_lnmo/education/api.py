@@ -6,20 +6,32 @@ from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Education, EducationSpecialization
+from ..common.api import DepartmentSerializer
 from ..user.models import User
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated
 
 
-class EducationSerializer(EduModelSerializer):
+class EducationSpecializationSerializer(EduModelSerializer):
+    department = DepartmentSerializer()
+    class Meta(EduModelSerializer.Meta):
+        model = EducationSpecialization
+        fields = '__all__'
+
+
+class EducationShallowSerializer(EduModelSerializer):
+    specialization = EducationSpecializationSerializer()
+
     class Meta(EduModelSerializer.Meta):
         model = Education
         fields = '__all__'
 
 
-class EducationSpecializationSerializer(EduModelSerializer):
+class EducationDeepSerializer(EduModelSerializer):
+    specialization = EducationSpecializationSerializer()
     class Meta(EduModelSerializer.Meta):
-        model = EducationSpecialization
+        model = Education
         fields = '__all__'
+        depth=1
 
 
 class EducationViewSet(EduModelViewSet):
@@ -38,7 +50,7 @@ class EducationViewSet(EduModelViewSet):
             else:
                 return request_user_is_authenticated(request)
 
-    serializer_class = EducationSerializer
+    serializer_class = EducationShallowSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [EducationPermissions]
 

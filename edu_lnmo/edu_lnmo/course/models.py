@@ -8,6 +8,15 @@ from ..user.models import User
 
 
 class Course(CommonObject):
+    class CourseType(TextChoices):
+        GEN = 'GEN', "Курс"
+        EDU = 'EDU', "Учебная программа"
+        SEM = 'SEM', "Семинар"
+        CLB = 'CLB', "Кружок"
+        ELE = 'ELE', "Предмет по выбору"
+
+    type = CharField(choices=CourseType.choices, default=CourseType.GEN, max_length=3)
+
     title = CharField(max_length=255, verbose_name="Название", blank=False)
     description = TextField(verbose_name="Описание")
 
@@ -30,7 +39,7 @@ class Course(CommonObject):
         return f"{self.title}" + (f" ({info})" if info else "")
 
     @property
-    def teachers(self):
+    def teachers(self) -> QuerySet:
         return CourseEnrollment.objects.filter(
             course=self,
             finished_on=None,
@@ -38,7 +47,7 @@ class Course(CommonObject):
         )
 
     @property
-    def students(self):
+    def students(self) -> QuerySet:
         return CourseEnrollment.objects.filter(
             course=self,
             finished_on=None,

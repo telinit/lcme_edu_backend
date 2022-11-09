@@ -30,17 +30,18 @@ class EmailManager(object):
         send_mail("ЛНМО | Восстановление пароля", msg, "edu@lnmo.ru", [recipient], html_message=html_msg)
 
     @staticmethod
-    def send_notification_on_password_change(user_first_name, recipient):
+    def send_notification_on_password_change(user_first_name, recipient, is_reset):
+        h = "Был успешно выполнен сброс пароля" if is_reset else "Был успешно изменен пароль"
         msg = f"""Здравствуйте, {user_first_name}.
 
-Был успешно выполнен сброс пароля на Образовательном Портале ЛНМО (https://edu.lnmo.ru). 
+{h} на Образовательном Портале ЛНМО (https://edu.lnmo.ru). 
 
 Если это были не вы, то рекомендуем как можно быстрее воспользователься функцией восстановления пароля, 
 а также изменить ваш email в настройках вашего профиля."""
 
         html_msg = f"""Здравствуйте, {user_first_name}.<br><br>
         
-Был успешно выполнен сброс пароля на <a href="https://edu.lnmo.ru">Образовательном Портале</a> ЛНМО. <br><br>
+{h} на <a href="https://edu.lnmo.ru">Образовательном Портале</a> ЛНМО. <br><br>
 
 Если это были не вы, то рекомендуем как можно быстрее воспользоваться функцией восстановления пароля, 
 а также изменить ваш email в настройках вашего профиля."""

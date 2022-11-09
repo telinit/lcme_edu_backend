@@ -48,6 +48,7 @@ class CoursesDataImporter(CSVDataImporter):
                 for_specialization=spec,
                 for_class=rec["Класс"].strip(),
                 for_group=rec["Группа"].strip(),
+                type=Course.CourseType.EDU
             )
 
             course_enrollment, _ = CourseEnrollment.objects.get_or_create(

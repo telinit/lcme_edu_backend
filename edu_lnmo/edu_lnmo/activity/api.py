@@ -10,7 +10,8 @@ from rest_framework.request import Request
 from .models import Activity
 from ..course.models import Course, CourseEnrollment
 from ..user.models import User
-from ..util.rest import request_user_is_staff, EduModelViewSet, request_user_is_authenticated, EduModelSerializer
+from ..util.rest import request_user_is_staff, EduModelViewSet, request_user_is_authenticated, EduModelSerializer, \
+    EduModelReadSerializer
 
 
 class ActivitySerializer(EduModelSerializer):

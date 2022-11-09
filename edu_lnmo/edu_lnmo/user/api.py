@@ -21,6 +21,7 @@ from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST, HTTP
 
 from .models import User
 from ..course.models import CourseEnrollment
+from ..education.api import EducationShallowSerializer, EducationDeepSerializer
 from ..education.models import Education
 from ..settings import EMAIL_JWT_SECRET
 from ..util.email import EmailManager
@@ -66,15 +67,17 @@ class UserShallowSerializer(EduModelSerializer):
         else:
             return edu.get_current_class()
 
-
     class Meta(EduModelSerializer.Meta):
         model = User
         # fields = '__all__'
-        exclude = ['password', 'pw_enc']
+        exclude = ['password', 'pw_enc', 'user_permissions']
 
 
 class UserDeepSerializer(UserShallowSerializer):
     children = UserShallowSerializer(many=True)
+    parents = UserShallowSerializer(many=True)
+    education = EducationShallowSerializer(many=True)
+
     class Meta(UserShallowSerializer.Meta):
         depth = 1
 
@@ -87,15 +90,19 @@ class LoginSerializer(serializers.Serializer):
 class SetPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=255)
 
+
 class ResetPasswordRequestSerializer(serializers.Serializer):
     login = serializers.CharField(max_length=255)
+
 
 class ResetPasswordCompleteSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=255)
     token = serializers.CharField(max_length=255)
 
+
 class SetEmailSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
+
 
 class TokenSerializer(serializers.Serializer):
     user = UserDeepSerializer()
@@ -111,17 +118,17 @@ class UserViewSet(EduModelViewSet):
     class UserPermissions(BasePermission):
 
         def has_permission(self, request: Request, view: "UserViewSet"):
-            if view.action in ["login", "reset_password_request", "reset_password_complete"]:
+            if view.action in ["login", "reset_password_request", "reset_password_complete", "set_password", "set_email"]:
                 return True
             elif view.action == "create":
                 return request_user_is_staff(request)
-            elif view.action in ["list", "logout", "self", "set_password", "get_deep"]:
+            elif view.action in ["list", "logout", "self", "get_deep"]:
                 return request.user and request.user.is_authenticated
             else:
                 return False
 
         def has_object_permission(self, request: Request, view: "UserViewSet", obj):
-            if view.action in ["retrieve", "get-deep"]:
+            if view.action in ["retrieve", "get-deep", "set_password", "set_email"]:
                 return True
             elif view.action in ["update", "partial_update", "destroy"]:
                 return request_user_is_staff(request)
@@ -193,38 +200,56 @@ class UserViewSet(EduModelViewSet):
 
     @swagger_auto_schema(request_body=SetPasswordSerializer,
                          responses={200: 'The password is updated'})
-    @action(methods=['POST'], detail=False)
-    def set_password(self, request: Request):
+    @action(methods=['POST'], detail=True)
+    def set_password(self, request: Request, pk):
+        if not request_user_is_staff(request) and pk != request.user.id:
+            return Response(status=HTTP_403_FORBIDDEN)
+
+        user = User.objects.filter(id=pk)
+        if not user:
+            return Response(status=HTTP_404_NOT_FOUND)
+
+        user = user[0]
+
         password_ = request.data["password"]
         if not password_ or len(password_) < 5:
             return Response('Password is not valid', status=HTTP_400_BAD_REQUEST)
 
-        if email_ok(request.user.email):
-            EmailManager.send_notification_on_password_change(request.user.first_name, request.user.email)
+        if email_ok(user.email):
+            EmailManager.send_notification_on_password_change(user.first_name, user.email, is_reset=False)
 
-        request.user.set_password(password_)
-        request.user.save()
+        user.set_password(password_)
+        user.save()
         return Response()
 
     @swagger_auto_schema(request_body=SetEmailSerializer,
                          responses={200: 'The email address is updated'})
-    @action(methods=['POST'], detail=False)
-    def set_email(self, request: Request):
+    @action(methods=['POST'], detail=True)
+    def set_email(self, request: Request, pk):
+        if not request_user_is_staff(request) and pk != request.user.id:
+            return Response(status=HTTP_403_FORBIDDEN)
+
+        user = User.objects.filter(id=pk)
+        if not user:
+            return Response(status=HTTP_404_NOT_FOUND)
+
+        user = user[0]
+
         email_new = str(request.data["email"]).strip()
 
         if not email_new or not email_ok(email_new):
             return Response('Email is not valid', status=HTTP_400_BAD_REQUEST)
 
-        existing_users = User.objects.filter(Q(email__iexact=email_new), ~Q(id=request.user.id))
+        existing_users = User.objects.filter(Q(email__iexact=email_new), ~Q(id=user.id))
 
         if existing_users:
             return Response('Email address already in use', status=HTTP_409_CONFLICT)
 
-        if email_ok(request.user.email):
-            EmailManager.send_notification_on_email_change(request.user.first_name, request.user.email)
+        if email_ok(user.email):
+            EmailManager.send_notification_on_email_change(user.first_name, user.email)
 
-        request.user.email = email_new
-        request.user.save()
+        user.email = email_new
+        user.save()
         return Response()
 
     @swagger_auto_schema(request_body=ResetPasswordRequestSerializer,
@@ -257,7 +282,11 @@ class UserViewSet(EduModelViewSet):
             if user:
                 user = user[0]
                 if email_ok(user.email):
-                    EmailManager.send_notification_on_password_change(request.user.first_name, request.user.email)
+                    EmailManager.send_notification_on_password_change(
+                        request.user.first_name,
+                        request.user.email,
+                        is_reset=True
+                    )
 
                 user.set_password()
                 user.save()

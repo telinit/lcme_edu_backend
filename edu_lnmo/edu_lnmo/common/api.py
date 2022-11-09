@@ -1,11 +1,18 @@
 from rest_framework import serializers, viewsets, permissions
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.fields import IntegerField, CharField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
+from rest_framework.serializers import Serializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Organization, Department
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated
+
+
+class ErrorMessageSerializer(Serializer):
+    code = IntegerField()
+    message = CharField()
 
 
 class OrganizationSerializer(EduModelSerializer):
@@ -15,6 +22,7 @@ class OrganizationSerializer(EduModelSerializer):
 
 
 class DepartmentSerializer(EduModelSerializer):
+    organization = OrganizationSerializer()
     class Meta(EduModelSerializer.Meta):
         model = Department
         fields = '__all__'

@@ -1,23 +1,29 @@
 from django.contrib.auth.models import AnonymousUser
+from django.db import transaction
+from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, viewsets, permissions
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
-from rest_framework.fields import SerializerMethodField
+from rest_framework.fields import SerializerMethodField, UUIDField, DictField, ListField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
+from rest_framework.serializers import Serializer, ModelSerializer
+from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Course, CourseEnrollment
 from ..activity.api import ActivitySerializer
+from ..activity.models import Activity
+from ..common.api import ErrorMessageSerializer
 from ..education.api import EducationSpecializationSerializer
 from ..file.api import FileSerializer
 from ..user.api import UserShallowSerializer
 from ..user.models import User
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated, \
     EduModelReadSerializer, EduModelWriteSerializer
+
 
 class CourseEnrollmentReadSerializer(EduModelReadSerializer):
     person = UserShallowSerializer()
@@ -56,6 +62,13 @@ class CourseShallowSerializer(EduModelWriteSerializer):
         depth = 0
 
 
+class BulkSetActivitiesSerializer(Serializer):
+
+    # delete = ListField(child=UUIDField())
+    create = ActivitySerializer(many=True)
+    update = DictField(child=ActivitySerializer())
+
+
 class CourseViewSet(EduModelViewSet):
     class CoursePermissions(BasePermission):
 
@@ -68,6 +81,9 @@ class CourseViewSet(EduModelViewSet):
         def has_object_permission(self, request: Request, view: "CourseViewSet", obj: Course):
             if view.action in ["update", "partial_update", "destroy"]:
                 return request_user_is_staff(request)
+            elif view.action in ["bulk_set_activities"]:
+                return request_user_is_authenticated(request) and \
+                       (request_user_is_staff(request) or obj.teachers.filter(id=request.user.id).exists())
             else:
                 return request_user_is_authenticated(request)
 
@@ -88,6 +104,66 @@ class CourseViewSet(EduModelViewSet):
         obj = self.get_queryset()
         ser = CourseDeepSerializer(obj, many=True)
         return Response(ser.data)
+
+    @swagger_auto_schema(request_body=BulkSetActivitiesSerializer,
+                         responses={200: 'OK', HTTP_400_BAD_REQUEST: ErrorMessageSerializer})
+    @action(methods=['POST'], detail=True)
+    def bulk_set_activities(self, request: Request, pk):
+        course = Course.objects.filter(id=pk)
+        if not course:
+            return Response(status=HTTP_404_NOT_FOUND)
+
+        course = course[0]
+        ser = BulkSetActivitiesSerializer(data=request.data)
+
+        if not ser.is_valid():
+            return Response(
+                status=HTTP_400_BAD_REQUEST,
+                data={
+                    'code': HTTP_400_BAD_REQUEST,
+                    'message': str(ser.errors)
+                }
+            )
+
+        with transaction.atomic():
+            Activity.objects.filter(
+                Q(course=course),
+                ~Q(id__in=ser.validated_data['update'].keys())
+            ).delete()
+
+            for act_raw in ser.validated_data['create']:
+                if act_raw['course'].id != course.id:
+                    return Response(status=HTTP_400_BAD_REQUEST)
+
+                act_raw_safe = dict(act_raw)
+                if 'files' in act_raw_safe:
+                    del act_raw_safe['files']
+
+                act = Activity(**act_raw_safe)
+
+                if 'files' in act_raw:
+                    for f in act_raw['files']:
+                        act.files.add(f)
+
+                act.save()
+
+            for act_id, act_raw in ser.validated_data['update'].items():
+                if act_raw['course'].id != course.id:
+                    return Response(status=HTTP_400_BAD_REQUEST)
+
+                act_raw_safe = dict(act_raw)
+                if 'files' in act_raw_safe:
+                    del act_raw_safe['files']
+
+                act = Activity.objects.filter(id=act_id)\
+
+                if 'files' in act_raw:
+                    for f in act_raw['files']:
+                        act.files.add(f)
+
+                act.update(**act_raw_safe)
+
+        return Response()
 
     def get_queryset(self):
         u: User = self.request.user

@@ -1,3 +1,5 @@
+import uuid
+
 from django.db.models import *
 
 from ..common.models import CommonObject
@@ -8,14 +10,14 @@ from ..file.models import File
 class Activity(CommonObject):
     class ActivityType(TextChoices):
         GEN  = 'GEN', "Общая" # TODO: Implement first
-        ART  = 'ART', "Статья"
+        TXT  = 'TXT', "Текст"
         TSK  = 'TSK', "Задание"
         LNK  = 'LNK', "Ссылка"
         MED  = 'MED', "Медиа-контент"
         FIN  = 'FIN', "Итоговый контроль"
 
     # TODO: Implement first
-    type = CharField(choices=ActivityType.choices, default=ActivityType.GEN, max_length=3)
+    type                = CharField(choices=ActivityType.choices, default=ActivityType.GEN, max_length=3)
 
     course              = ForeignKey(Course, verbose_name="Курс", related_name="activities", on_delete=CASCADE)
 
@@ -24,11 +26,15 @@ class Activity(CommonObject):
 
     is_hidden           = BooleanField(verbose_name="Скрыта", default=False)
     marks_limit         = IntegerField(verbose_name="Лимит оценок", default=1)
+    hours               = IntegerField(verbose_name="Количество часов", default=1)
 
-    order               = IntegerField(verbose_name="Номер в списке курса", unique=True)
+    fgos_complient      = BooleanField(verbose_name="Соответствие ФГОС", default=False)
+
+    order               = IntegerField(verbose_name="Номер в списке курса")
     date                = DateField(verbose_name="Дата проведения")
-    # TODO: Implement later
+
     group               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)
+    scientific_topic    = CharField(max_length=255, verbose_name="", blank=True, null=True)
 
     body = TextField(blank=True)
     files = ManyToManyField(File, verbose_name="Вложения/файлы", related_name="activities", blank=True)
@@ -38,10 +44,10 @@ class Activity(CommonObject):
     link = URLField(verbose_name="Ссылка", null=True, blank=True)
     embed = BooleanField(default=True, verbose_name="Встроена")
 
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=['course', 'order'], name='unique activity order in course')
-        ]
+    # class Meta:
+    #     constraints = [
+    #         UniqueConstraint(fields=['course', 'order'], name='unique activity order in course')
+    #     ]
 
     class FinalType(TextChoices):
         Q1 = 'Q1', "1 четверть"

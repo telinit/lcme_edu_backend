@@ -16,7 +16,7 @@ class EducationSpecialization(CommonObject):
 
 
 class Education(CommonObject):
-    student         = ForeignKey(User, verbose_name="Учащийся", on_delete=CASCADE)
+    student         = ForeignKey(User, verbose_name="Учащийся", related_name="education", on_delete=CASCADE)
 
     started         = DateField(verbose_name="Дата поступления")
     finished        = DateField(verbose_name="Дата завершения", null=True, blank=True)
