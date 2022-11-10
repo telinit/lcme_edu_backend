@@ -125,12 +125,9 @@ class CourseViewSet(EduModelViewSet):
                 }
             )
 
-        with transaction.atomic():
-            Activity.objects.filter(
-                Q(course=course),
-                ~Q(id__in=ser.validated_data['update'].keys())
-            ).delete()
+        dont_delete = []
 
+        with transaction.atomic():
             for act_raw in ser.validated_data['create']:
                 if act_raw['course'].id != course.id:
                     return Response(status=HTTP_400_BAD_REQUEST)
@@ -146,6 +143,7 @@ class CourseViewSet(EduModelViewSet):
                         act.files.add(f)
 
                 act.save()
+                dont_delete += [act.id]
 
             for act_id, act_raw in ser.validated_data['update'].items():
                 if act_raw['course'].id != course.id:
@@ -162,6 +160,12 @@ class CourseViewSet(EduModelViewSet):
                         act.files.add(f)
 
                 act.update(**act_raw_safe)
+                dont_delete += [act_id]
+
+            Activity.objects.filter(
+                Q(course=course),
+                ~Q(id__in=dont_delete),
+            ).delete()
 
         return Response()
 

@@ -1,14 +1,23 @@
 import uuid
 
 from django.contrib.auth.models import AnonymousUser
+from django.db import transaction
 from django.db.models import QuerySet
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, serializers, permissions
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import action
+from rest_framework.fields import CharField, IntegerField, UUIDField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.serializers import Serializer
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from .models import Activity
+from ..common.api import ErrorMessageSerializer
 from ..course.models import Course, CourseEnrollment
+from ..imports.activities import ActivitiesDataImporter
 from ..user.models import User
 from ..util.rest import request_user_is_staff, EduModelViewSet, request_user_is_authenticated, EduModelSerializer, \
     EduModelReadSerializer
@@ -19,7 +28,19 @@ class ActivitySerializer(EduModelSerializer):
         model = Activity
         fields = '__all__'
 
-    # TODO: Validate
+
+class ImportForCourseSerializer(Serializer):
+    data        = CharField()
+    course_id   = UUIDField()
+
+
+class ImportForCourseResultSerializer(Serializer):
+    class ImportForCourseResultObject(Serializer):
+        index = IntegerField()
+        type = CharField()
+        topic = CharField()
+
+    objects = ImportForCourseResultObject(many=True)
 
 
 class ActivityViewSet(EduModelViewSet):
@@ -47,6 +68,37 @@ class ActivityViewSet(EduModelViewSet):
                 return self.has_write_access(request)
             else:
                 return request_user_is_authenticated(request)
+
+    @swagger_auto_schema(request_body=ImportForCourseSerializer,
+                         responses={
+                             HTTP_200_OK: ImportForCourseResultSerializer(),
+                             HTTP_400_BAD_REQUEST: ErrorMessageSerializer()
+                         })
+    @action(methods=['POST'], detail=False)
+    def import_for_course(self, request: Request):
+        ser = ImportForCourseSerializer(data=request.data)
+
+        if not ser.is_valid():
+            return Response(
+                status=HTTP_400_BAD_REQUEST,
+                data={
+                    'code': HTTP_400_BAD_REQUEST,
+                    'message': str(ser.errors)
+                }
+            )
+
+        with transaction.atomic():
+            data = ser.validated_data['data']
+            course_id = ser.validated_data['course_id']
+
+            imp = ActivitiesDataImporter()
+            import_result = imp.do_import(data, course_id)
+
+            result_data = []
+            for r in import_result.report_rows[1:]:
+                result_data += [{"index": int(r[0]), "type": r[1], "topic": r[2]}]
+
+            return Response(data={"objects": result_data})
 
     def get_queryset(self):
         u: User = self.request.user
