@@ -1,0 +1,25 @@
+version: "3.3"
+
+services:
+  postgres:
+    image: postgres
+    volumes:
+      - /docker/edu_lnmo_back/volumes/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  web:
+    image: git.lnmo.ru/lcme/edu-lnmo-back
+    volumes:
+      - /docker/edu_lnmo_back/volumes/upload:/code/edu_lnmo/edu_lnmo/upload
+    command: /code/run_server.sh
+    ports:
+      - "127.0.0.1:8018:8000"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - postgres
+
