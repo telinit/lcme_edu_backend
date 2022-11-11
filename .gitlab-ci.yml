@@ -78,6 +78,8 @@ make-backup-production:
 
 stop-deploy-2-production:
   stage: deploy
+  tags:
+    - bare
   script:
     - docker-compose down
   when: manual
