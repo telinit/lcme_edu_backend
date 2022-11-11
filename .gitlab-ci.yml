@@ -1,0 +1,86 @@
+variables:
+  POSTGRES_DB: $POSTGRES_DB
+  POSTGRES_NAME: $POSTGRES_NAME
+  POSTGRES_ROOT_PASSWORD: $POSTGRES_ROOT_PASSWORD
+  POSTGRES_USER: $POSTGRES_USER
+  POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+
+stages:
+  - tools
+  - build
+  - test
+  - push
+  - deploy
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+
+after_script:
+  - docker logout $CI_REGISTRY || true
+
+build-image:
+  stage: build
+  tags: 
+    - bare
+  script:
+    - env
+    - docker build -t git.lnmo.ru/lcme/edu-lnmo-back:latest .
+    # -t git.lnmo.ru/lcme/achievements:${VERSION_TAG}  .
+
+test-image:
+  stage: test
+  tags:
+    - bare
+  script:
+    - docker run git.lnmo.ru/lcme/edu-lnmo-back:latest /bin/sh -c "cd edu_lnmo && python manage.py test && python manage.py check" || true
+
+push-image:
+  stage: push
+  tags:
+    - bare
+  script:
+    - docker push git.lnmo.ru/lcme/edu-lnmo-back:latest || true
+    # - docker push git.lnmo.ru/lcme/achievements:${VERSION_TAG}
+
+deploy-2-production:
+  stage: deploy
+  tags:
+    - bare
+  script:
+    - docker-compose down || true
+    - docker-compose up -d
+  environment:
+    name: production
+    url: https://edu.lnmo.ru
+    on_stop: stop-deploy-2-production
+  when: manual
+
+make-default-admin-production:
+  stage: deploy
+  tags:
+    - bare
+  script:
+    - docker exec edu_lnmo_web_1 /code/make_default_admin.sh
+  when: manual
+
+make-backup-production:
+  stage: tools
+  tags:
+    - bare
+  script:
+      - mkdir -p /docker/edu_lnmo_back/backups/db
+      - echo 127.0.0.1:5432:$POSTGRES_DB:$POSTGRES_USER:$POSTGRES_PASSWORD > /docker/edu_lnmo_back/backups/db/.pgpass
+      - docker cp /docker/edu_lnmo_back/backups/db/.pgpass achievements_postgres_1:/.pgpass
+      - rm /docker/edu_lnmo_back/backups/db/.pgpass
+      - docker exec edu_lnmo_postgres_1 chmod 600 /.pgpass
+      - docker exec edu_lnmo_postgres_1 env PGPASSFILE=/.pgpass pg_dump -w -U "$POSTGRES_USER" | gzip > /docker/edu_lnmo/backups/db/$(date +%Y-%m-%d_%H-%M-%S).sql.gz
+  when: manual
+
+stop-deploy-2-production:
+  stage: deploy
+  script:
+    - docker-compose down
+  when: manual
+  environment:
+    name: production
+    action: stop
