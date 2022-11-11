@@ -60,7 +60,7 @@ make-default-admin-production:
   tags:
     - bare
   script:
-    - docker exec edu_lnmo_web_1 /code/make_default_admin.sh
+    - docker exec edu-lnmo-back_web_1 /code/make_default_admin.sh
   when: manual
 
 make-backup-production:
@@ -70,10 +70,10 @@ make-backup-production:
   script:
       - mkdir -p /docker/edu_lnmo_back/backups/db
       - echo 127.0.0.1:5432:$POSTGRES_DB:$POSTGRES_USER:$POSTGRES_PASSWORD > /docker/edu_lnmo_back/backups/db/.pgpass
-      - docker cp /docker/edu_lnmo_back/backups/db/.pgpass achievements_postgres_1:/.pgpass
+      - docker cp /docker/edu_lnmo_back/backups/db/.pgpass edu-lnmo-back_postgres_1:/.pgpass
       - rm /docker/edu_lnmo_back/backups/db/.pgpass
-      - docker exec edu_lnmo_postgres_1 chmod 600 /.pgpass
-      - docker exec edu_lnmo_postgres_1 env PGPASSFILE=/.pgpass pg_dump -w -U "$POSTGRES_USER" | gzip > /docker/edu_lnmo_back/backups/db/$(date +%Y-%m-%d_%H-%M-%S).sql.gz
+      - docker exec edu-lnmo-back_postgres_1 chmod 600 /.pgpass
+      - docker exec edu-lnmo-back_postgres_1 env PGPASSFILE=/.pgpass pg_dump -w -U "$POSTGRES_USER" | gzip > /docker/edu_lnmo_back/backups/db/$(date +%Y-%m-%d_%H-%M-%S).sql.gz
   when: manual
 
 stop-deploy-2-production:
