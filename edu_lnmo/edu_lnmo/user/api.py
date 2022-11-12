@@ -143,25 +143,8 @@ class UserViewSet(EduModelViewSet):
         u: User = self.request.user
         if isinstance(u, AnonymousUser):
             return None
-        elif u.is_staff or u.is_superuser:
-            return User.objects.all()
         else:
-            courses = CourseEnrollment.get_courses_of_teacher(u)
-            students = CourseEnrollment.get_students_of_courses(courses)
-
-            # Children
-            u1 = u.children.all()
-
-            # Self
-            u2 = User.objects.filter(id=u.id)
-
-            # Own students
-            u3 = User.objects.filter(id__in=students)
-
-            # News writers
-            u4 = User.objects.filter(messages_sent__messagenews__isnull=False, messages_sent__sender__id=F('id'))
-
-            return (u1 | u2 | u3 | u4).distinct()
+            return User.objects.all()
 
     @swagger_auto_schema(responses={200: UserDeepSerializer()})
     @action(methods=['GET'], detail=True, url_path='deep')
