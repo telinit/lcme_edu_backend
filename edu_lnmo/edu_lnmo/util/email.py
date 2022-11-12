@@ -12,6 +12,10 @@ class EmailManager(object):
     def make_email(body):
         pass
 
+
+
+
+
     @staticmethod
     def send_password_reset(uid, user_first_name, recipient):
         jwt = PyJWT()
@@ -29,9 +33,13 @@ class EmailManager(object):
 
         send_mail("ЛНМО | Восстановление пароля", msg, "edu@lnmo.ru", [recipient], html_message=html_msg)
 
+
+
+
+
     @staticmethod
     def send_notification_on_password_change(user_first_name, recipient, is_reset):
-        h = "Был успешно выполнен сброс пароля" if is_reset else "Был успешно изменен пароль"
+        h = "Был успешно выполнен сброс вашего пароля" if is_reset else "Был успешно изменен ваш пароль"
         msg = f"""Здравствуйте, {user_first_name}.
 
 {h} на Образовательном Портале ЛНМО (https://edu.lnmo.ru). 
@@ -47,6 +55,10 @@ class EmailManager(object):
 а также изменить ваш email в настройках вашего профиля."""
 
         send_mail("ЛНМО | Изменение пароля", msg, "edu@lnmo.ru", [recipient], html_message=html_msg)
+
+
+
+
 
     @staticmethod
     def send_notification_on_email_change(user_first_name, recipient):
