@@ -58,7 +58,7 @@ class PasswordsDataImporter(CSVDataImporter):
                     res.report_rows += [[last_name, first_name, middle_name, str(count), "Успех"]]
                     res.objects += [user]
 
-            if print_status_stdout_every > 0 and i % print_status_stdout_every:
+            if print_status_stdout_every > 0 and i % print_status_stdout_every == 0:
                 print(f"PasswordsDataImporter: {i}")
 
         return res
