@@ -74,7 +74,6 @@ make-backup-production:
       - rm /docker/edu_lnmo_back/backups/db/.pgpass
       - docker exec edu-lnmo-back_postgres_1 chmod 600 /.pgpass
       - docker exec edu-lnmo-back_postgres_1 env PGPASSFILE=/.pgpass pg_dump -w -U "$POSTGRES_USER" | gzip > /docker/edu_lnmo_back/backups/db/$(date +%Y-%m-%d_%H-%M-%S).sql.gz
-  when: manual
 
 stop-deploy-2-production:
   stage: deploy
