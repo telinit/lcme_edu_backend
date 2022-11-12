@@ -29,10 +29,11 @@ class PasswordsDataImporter(CSVDataImporter):
         child.parents.add(parent)
         return parent
 
-    def do_import(self, data: str):
+    def do_import(self, data: str, print_status_stdout_every=0):
         r = DictReader(data.splitlines())
         res = PasswordsImportResult()
-        for rec in r:
+
+        for i, rec in enumerate(r):
             last_name = rec["Фамилия"].strip()
             first_name = rec["Имя"].strip()
             middle_name = rec["Отчество"].strip()
@@ -45,16 +46,19 @@ class PasswordsDataImporter(CSVDataImporter):
             )
 
             if not user:
-                res.report_rows += [[last_name, first_name, middle_name, 0, "Пропуск"]]
+                res.report_rows += [[last_name, first_name, middle_name, "0", "Пропуск"]]
             else:
                 count = user.count()
                 if count > 1:
-                    res.report_rows += [[last_name, first_name, middle_name, count, "Пропуск"]]
+                    res.report_rows += [[last_name, first_name, middle_name, str(count), "Пропуск"]]
                 else:
                     user = user[0]
                     user.set_password(pwd)
 
-                    res.report_rows += [[last_name, first_name, middle_name, count, "Успех"]]
+                    res.report_rows += [[last_name, first_name, middle_name, str(count), "Успех"]]
                     res.objects += [user]
+
+            if print_status_stdout_every > 0 and i % print_status_stdout_every:
+                print(f"PasswordsDataImporter: {i}")
 
         return res
