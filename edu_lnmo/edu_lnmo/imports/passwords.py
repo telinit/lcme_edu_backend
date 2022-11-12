@@ -54,6 +54,7 @@ class PasswordsDataImporter(CSVDataImporter):
                 else:
                     user = user[0]
                     user.set_password(pwd)
+                    user.save()
 
                     res.report_rows += [[last_name, first_name, middle_name, str(count), "Успех"]]
                     res.objects += [user]
