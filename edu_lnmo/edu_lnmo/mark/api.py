@@ -98,7 +98,7 @@ class MarkViewSet(EduModelViewSet):
         else:
             users = User.objects.filter(id=u.id) | u.children.all()
 
-            q1 = Q(teacher__in=users)
+            q1 = Q(author__in=users)
             q2 = Q(student__in=users)
 
             courses = CourseEnrollment.get_courses_of_user(users)

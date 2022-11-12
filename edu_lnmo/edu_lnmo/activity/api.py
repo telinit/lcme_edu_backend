@@ -121,5 +121,5 @@ class ActivityViewSet(EduModelViewSet):
     serializer_class = ActivitySerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [ActivityPermissions]
-    filterset_fields = ['type', 'course', 'group']
-    search_fields = ['title', 'keywords']
+    filterset_fields = ['content_type', 'course', 'group']
+    search_fields = ['title', 'keywords', 'lesson_type']
