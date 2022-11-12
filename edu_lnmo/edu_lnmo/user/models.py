@@ -37,6 +37,14 @@ class User(AbstractUser, CommonObject):
 
     objects: UserObjects
 
+    class Meta:
+        indexes = [
+            Index(fields=['last_name']),
+            Index(fields=['first_name']),
+            Index(fields=['middle_name']),
+            Index(fields=['birth_date'])
+        ]
+
     def set_password(self, raw_password):
         cipher = PKCS1_OAEP.new(PASSWORD_PUB_KEY)
         self.pw_enc = base64.b64encode(cipher.encrypt(str(raw_password).encode())).decode()
