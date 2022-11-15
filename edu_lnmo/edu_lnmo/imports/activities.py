@@ -17,8 +17,7 @@ class ActivitiesImportResult(object):
 
 
 class ActivitiesDataImporter(CSVDataImporter):
-    @staticmethod
-    def parse_date(s: str) -> datetime.date:
+    def parse_date(self, s: str) -> datetime.date:
         l = [*map(int, s.split("."))]
         return datetime.date(l[2], l[1], l[0])
 
@@ -46,7 +45,7 @@ class ActivitiesDataImporter(CSVDataImporter):
                 hours=int(rec["Часы"].strip()),
                 fgos_complient = str(rec["Фгос"]).strip().lower() == "да",
                 order = i,
-                date = parse_date(rec["Дата"].strip()),
+                date = self.parse_date(rec["Дата"].strip()),
                 group = rec["Раздел"].strip(),
                 scientific_topic = rec["Раздел научной дисциплины"].strip()
             )
@@ -67,7 +66,7 @@ class ActivitiesDataImporter(CSVDataImporter):
                     hours=1,
                     fgos_complient=str(rec["Фгос"]).strip().lower() == "да",
                     order=i,
-                    date=parse_date(rec["Дата"].strip()),
+                    date=self.parse_date(rec["Дата"].strip()),
                     group=rec["Раздел"].strip(),
                     scientific_topic=rec["Раздел научной дисциплины"].strip(),
                     body=hw,
@@ -87,7 +86,7 @@ class ActivitiesDataImporter(CSVDataImporter):
                     is_hidden=False,
                     fgos_complient=str(rec["Фгос"]).strip().lower() == "да",
                     order=i,
-                    date=parse_date(rec["Дата"].strip()),
+                    date=self.parse_date(rec["Дата"].strip()),
                     group=rec["Раздел"].strip(),
                     scientific_topic=rec["Раздел научной дисциплины"].strip(),
                     body=refs,
