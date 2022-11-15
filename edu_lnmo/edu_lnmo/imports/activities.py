@@ -17,23 +17,24 @@ class ActivitiesImportResult(object):
 
 
 class ActivitiesDataImporter(CSVDataImporter):
+    @staticmethod
+    def parse_date(s: str) -> datetime.date:
+        l = [*map(int, s.split("."))]
+        return datetime.date(l[2], l[1], l[0])
+
     def do_import(self, data: str, course_id):
         r = DictReader(data.splitlines())
         res = ActivitiesImportResult()
-        users = {}
 
         course = Course.objects.get(id=course_id)
 
         i = 1 + (Activity.objects.filter(course=course).aggregate(Max('order'))['order__max'] or 0)
 
-        # hw = 1 + Activity.objects.\
-        #     filter(
-        #         Q(lesson_type__icontains='домашняя работа') | Q(title__icontains='домашнее задание'),
-        #         course=course,
-        #         content_type=Activity.ActivityContentType.TSK
-        #     ).count()
-
         for rec in r:
+            for k in rec:
+                v = rec[k]
+                rec[str(k).capitalize()] = v
+
             act, _ = Activity.objects.get_or_create(
                 content_type = Activity.ActivityContentType.GEN,
                 course = course,
@@ -45,7 +46,7 @@ class ActivitiesDataImporter(CSVDataImporter):
                 hours=int(rec["Часы"].strip()),
                 fgos_complient = str(rec["ФГОС"]).strip().lower() == "да",
                 order = i,
-                date = datetime.datetime.strptime(rec["Дата"].strip(), '%d.%m.%Y'),
+                date = parse_date(rec["Дата"].strip()),
                 group = rec["Раздел"].strip(),
                 scientific_topic = rec["Раздел научной дисциплины"].strip()
             )
@@ -66,7 +67,7 @@ class ActivitiesDataImporter(CSVDataImporter):
                     hours=1,
                     fgos_complient=str(rec["ФГОС"]).strip().lower() == "да",
                     order=i,
-                    date=datetime.datetime.strptime(rec["Дата"].strip(), '%d.%m.%Y'),
+                    date=parse_date(rec["Дата"].strip()),
                     group=rec["Раздел"].strip(),
                     scientific_topic=rec["Раздел научной дисциплины"].strip(),
                     body=hw,
@@ -86,11 +87,12 @@ class ActivitiesDataImporter(CSVDataImporter):
                     is_hidden=False,
                     fgos_complient=str(rec["ФГОС"]).strip().lower() == "да",
                     order=i,
-                    date=datetime.datetime.strptime(rec["Дата"].strip(), '%d.%m.%Y'),
+                    date=parse_date(rec["Дата"].strip()),
                     group=rec["Раздел"].strip(),
                     scientific_topic=rec["Раздел научной дисциплины"].strip(),
                     body=refs,
-                    linked_activity=act
+                    linked_activity=act,
+                    marks_limit=0
                 )
                 res.objects += [act_refs]
                 res.report_rows += [[str(i), "Материалы урока", rec["Тема"].strip()]]
