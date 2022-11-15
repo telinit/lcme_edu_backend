@@ -21,7 +21,7 @@ class Activity(CommonObject):
 
     course              = ForeignKey(Course, verbose_name="Курс", related_name="activities", on_delete=CASCADE)
 
-    title               = CharField(max_length=255, verbose_name="Название", blank=False)
+    title               = TextField(verbose_name="Название", blank=False)
     keywords            = CharField(max_length=255, verbose_name="Кодовое название", blank=True)
     lesson_type         = CharField(max_length=255, verbose_name="Тип занятия", blank=True)
 
