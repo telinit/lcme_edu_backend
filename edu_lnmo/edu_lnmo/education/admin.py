@@ -6,9 +6,23 @@ from .models import *
 
 @admin.register(EducationSpecialization)
 class EducationSpecializationAdmin(VersionAdmin):
-    pass
+    autocomplete_fields = ['department']
+    list_display = ['name', 'department']
+    list_filter = ('name', 'department')
+    search_fields = [
+        'name',
+        'department__name'
+    ]
 
 
 @admin.register(Education)
 class EducationAdmin(VersionAdmin):
-    pass
+    autocomplete_fields = ['student', 'specialization']
+    list_display = ['student', 'started', 'starting_class', 'finished', 'finishing_class']
+    list_filter = ('student', 'started', 'starting_class', 'finished', 'finishing_class')
+    search_fields = [
+        'student__first_name',
+        'student__last_name',
+        'student__middle_name',
+        'student__username'
+    ]

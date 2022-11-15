@@ -6,4 +6,9 @@ from .models import *
 
 @admin.register(File)
 class FileAdmin(VersionAdmin):
-    pass
+    autocomplete_fields = []
+    list_display = ['name', 'size', 'mime_type', 'hash']
+    list_filter = ('name', 'mime_type')
+    search_fields = [
+        'name'
+    ]

@@ -35,12 +35,13 @@ class Activity(CommonObject):
     date                = DateField(verbose_name="Дата проведения")
 
     group               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)
-    scientific_topic    = CharField(max_length=255, verbose_name="", blank=True, null=True)
+    scientific_topic    = CharField(max_length=255, verbose_name="Научный раздел", blank=True, null=True)
 
     body                = TextField(blank=True)
     files               = ManyToManyField(File, verbose_name="Вложения/файлы", related_name="activities", blank=True)
 
     due_date            = DateTimeField(verbose_name="Срок сдачи", null=True, blank=True)
+    submittable         = BooleanField(verbose_name="Отправка решений разрешена", default=True)
 
     link                = URLField(verbose_name="Ссылка", null=True, blank=True)
     embed               = BooleanField(default=True, verbose_name="Встроена")

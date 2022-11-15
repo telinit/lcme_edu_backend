@@ -6,4 +6,10 @@ from .models import *
 
 @admin.register(Activity)
 class ActivityAdmin(VersionAdmin):
-    pass
+    autocomplete_fields = ['course', 'files', 'linked_activity']
+    list_display = ['content_type', 'order', 'title', 'course']
+    list_filter = ('content_type', 'course')
+    search_fields = [
+        'title',
+        'course'
+    ]

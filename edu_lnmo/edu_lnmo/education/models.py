@@ -3,13 +3,13 @@ import re
 
 from django.db.models import *
 
-from ..common.models import Department, CommonObject
+from ..common.models import CommonObject
 from ..user.models import User
 
 
 class EducationSpecialization(CommonObject):
     name        = CharField(max_length=255, verbose_name="Название")
-    department  = ForeignKey(Department, verbose_name="Подразделение учебного заведения", on_delete=CASCADE)
+    department  = ForeignKey("Department", verbose_name="Подразделение учебного заведения", on_delete=CASCADE)
 
     def __str__(self):
         return f"{self.department}: {self.name}"

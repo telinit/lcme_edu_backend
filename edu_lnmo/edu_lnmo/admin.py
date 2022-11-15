@@ -6,3 +6,5 @@ from .file.admin import *
 from .mark.admin import *
 from .message.admin import *
 from .user.admin import *
+from .unread.admin import *
+from .olympiad.admin import *

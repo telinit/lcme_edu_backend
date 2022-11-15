@@ -5,34 +5,52 @@ from ..file.models import File
 from ..user.models import User
 
 
-class MessageContent(CommonObject):
-    class Meta:
-        abstract = True
+class Message(CommonObject):
+    class MessageType(TextChoices):
+        THR  = 'THR', "Тематическое"
+        PRV  = 'PRV', "Личное"
+        NEW  = 'NEW', "Новость"
+        MAN  = 'MAN', "Справка"
 
-    body        = TextField(blank=True)
+    type = CharField(choices=MessageType.choices, max_length=3, default=MessageType.PRV)
+    thread = ForeignKey("MessageThread", related_name="messages", verbose_name="Тема", blank=True, null=True, on_delete=SET_NULL)
+
+    sender = ForeignKey(User, verbose_name="Отправитель", related_name="messages_sent", on_delete=CASCADE)
+    receiver = ForeignKey(User, verbose_name="Получатель", related_name="messages_received", blank=True, null=True, on_delete=SET_NULL)
+
+    body = TextField(blank=True)
     attachments = ManyToManyField(File, verbose_name="Вложения", related_name="messages", blank=True)
 
-
-class Message(MessageContent):
-    sender  = ForeignKey(User, verbose_name="Отправитель", related_name="messages_sent", on_delete=CASCADE)
-    sent_at = DateTimeField(verbose_name="Отправлено в")
-
-    def __str__(self):
-        b = str(self.body)
-        b = b[0:max(20, len(b))]
-        return f"{self.sender}: {b}"
+    manual_category = CharField(verbose_name="Раздел", max_length=255, blank=True, null=True)
+    manual_audience = CharField(verbose_name="Предназначено для ролей", max_length=255, blank=True, null=True)
 
 
-class MessagePrivate(Message):
-    receiver    = ForeignKey(User, verbose_name="Получатель", related_name="messages_received", on_delete=CASCADE)
+class MessageThread(CommonObject):
+    class ThreadType(TextChoices):
+        GRP = 'GRP', "Группа"
+        FRM = 'FRM', "Форум"
+        SUP = 'SUP', "Поддержка"
 
-    def __str__(self):
-        return f"{self.sent_at}: {self.sender} -> {self.receiver}"
+    class SupportStatus(TextChoices):
+        OPEN = 'OPEN', "Открыт"
+        CLOSED = 'CLOSED', "Закрыт"
+        RESOLVED = 'RESOLVED', "Решен"
+        REJECTED = 'REJECTED', "Отклонен"
+        MORE_INFO = 'MORE_INFO', "Требуется уточнение"
 
+    type = CharField(choices=ThreadType.choices, max_length=3)
 
-class MessageTaskSubmission(MessagePrivate):
-    activity = ForeignKey("Activity", verbose_name="Задание", related_name="submissions", on_delete=CASCADE)
+    topic = CharField(verbose_name="Название темы", max_length=255, blank=True, null=True)
+    members = ManyToManyField("User", verbose_name="Участники", blank=True)
 
+    # forum_parent_thread   = ForeignKey("MessageThread", verbose_name="Родительская тема", blank=True, null=True, on_delete=CASCADE)
+    # forum_user_subthreads = BooleanField(verbose_name="Разрешено создавать темы", blank=False, null=False, default=False)
 
-class MessageNews(Message):
-    pass
+    support_status = CharField(choices=SupportStatus.choices, blank=True, null=True, max_length=10)
+
+    group = ForeignKey(to="ThreadGroup", verbose_name="Группа тем", related_name="threads", null=True, blank=True, on_delete=SET_NULL)
+
+class ThreadGroup(CommonObject):
+    name = CharField(verbose_name="Название", max_length=255, blank=False, null=False)
+
+    parent = ForeignKey(to="ThreadGroup", verbose_name="Родительская группа", related_name="children", null=True, blank=True, on_delete=SET_NULL)
