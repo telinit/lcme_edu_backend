@@ -30,10 +30,10 @@ class ActivitiesDataImporter(CSVDataImporter):
 
         i = 1 + (Activity.objects.filter(course=course).aggregate(Max('order'))['order__max'] or 0)
 
-        for rec in r:
+        for old_rec in r:
+            rec = {}
             for k in rec:
-                v = rec[k]
-                rec[str(k).capitalize()] = v
+                rec[str(k).strip().capitalize()] = old_rec[k]
 
             act, _ = Activity.objects.get_or_create(
                 content_type = Activity.ActivityContentType.GEN,
