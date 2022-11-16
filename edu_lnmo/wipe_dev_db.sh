@@ -1,6 +1,8 @@
 #!/bin/bash
 
-rm -rv edu_lnmo/migrations db.sqlite3
+docker stop edu-dev-postgres
+docker rm edu-dev-postgres
+docker run -p 5432:5432 --name edu-dev-postgres -e POSTGRES_PASSWORD=postgres -d postgres
 ./manage.py makemigrations edu_lnmo
 ./manage.py migrate
 ./manage.py shell << EOF

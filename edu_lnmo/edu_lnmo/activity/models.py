@@ -32,7 +32,7 @@ class Activity(CommonObject):
     fgos_complient      = BooleanField(verbose_name="Соответствие ФГОС", default=False)
 
     order               = IntegerField(verbose_name="Номер в списке курса")
-    date                = DateField(verbose_name="Дата проведения")
+    date                = DateField(verbose_name="Дата проведения", blank=True, null=True)
 
     group               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)
     scientific_topic    = CharField(max_length=255, verbose_name="Научный раздел", blank=True, null=True)
