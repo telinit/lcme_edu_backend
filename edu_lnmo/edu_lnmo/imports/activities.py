@@ -1,5 +1,6 @@
 import datetime
 from csv import DictReader
+from typing import Optional
 
 from django.db.models import Max, Q
 
@@ -17,9 +18,12 @@ class ActivitiesImportResult(object):
 
 
 class ActivitiesDataImporter(CSVDataImporter):
-    def parse_date(self, s: str) -> datetime.date:
-        l = [*map(int, s.split("."))]
-        return datetime.date(l[2], l[1], l[0])
+    def parse_date(self, s: str) -> Optional[datetime.date]:
+        try:
+            l = [*map(int, s.split("."))]
+            return datetime.date(l[2], l[1], l[0])
+        except:
+            return None
 
     def do_import(self, data: str, course_id):
         r = DictReader(data.splitlines())
