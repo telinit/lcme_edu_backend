@@ -25,8 +25,8 @@ class ActivitiesDataImporter(CSVDataImporter):
         except:
             return None
 
-    def do_import(self, data: str, course_id):
-        r = DictReader(data.splitlines())
+    def do_import(self, data: str, course_id, sep=","):
+        r = DictReader(data.splitlines(), delimiter=sep)
         res = ActivitiesImportResult()
 
         course = Course.objects.get(id=course_id)

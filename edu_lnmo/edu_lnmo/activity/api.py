@@ -31,6 +31,7 @@ class ActivitySerializer(EduModelSerializer):
 
 class ImportForCourseSerializer(Serializer):
     data        = CharField()
+    sep         = CharField()
     course_id   = UUIDField()
 
 
@@ -90,9 +91,10 @@ class ActivityViewSet(EduModelViewSet):
         with transaction.atomic():
             data = ser.validated_data['data']
             course_id = ser.validated_data['course_id']
+            sep = ser.validated_data['sep']
 
             imp = ActivitiesDataImporter()
-            import_result = imp.do_import(data, course_id)
+            import_result = imp.do_import(data, course_id, sep=sep)
 
             result_data = []
             for r in import_result.report_rows[1:]:
