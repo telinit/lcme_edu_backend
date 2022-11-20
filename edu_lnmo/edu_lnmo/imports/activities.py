@@ -37,7 +37,7 @@ class ActivitiesDataImporter(CSVDataImporter):
             rec = dict()
             all_empty = True
             for k in old_rec:
-                all_empty &= (strip(old_rec[k]) == "")
+                all_empty &= (str(old_rec[k]).strip() == "")
                 rec[str(k).strip().capitalize()] = old_rec[k]
 
             if all_empty:
