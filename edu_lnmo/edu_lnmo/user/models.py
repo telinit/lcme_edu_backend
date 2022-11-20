@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import *
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
 
 from ..common.models import CommonObject
 
@@ -13,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 
 from Crypto.PublicKey import RSA
 
-from ..settings import PASSWORD_PUB_KEY
+from ..settings import PASSWORD_PUB_KEY, AUTH_USER_MODEL
 
 
 def validate_password(pw):
@@ -55,3 +56,10 @@ class User(AbstractUser, CommonObject):
 
     def __str__(self):
         return f"{self.username}"
+
+
+class MultiToken(Token):
+    user = ForeignKey(  # changed from OneToOne to ForeignKey
+        AUTH_USER_MODEL, related_name='tokens',
+        on_delete=CASCADE, verbose_name=_("User")
+    )

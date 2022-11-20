@@ -24,7 +24,6 @@ class StatsViewSet(ViewSet):
     @swagger_auto_schema(responses={200: CountersSerializer()})
     @action(methods=['GET'], detail=False)
     def counters(self, blah):
-        print(blah)
         obj = {
             "courses": Course.objects.count(),
             "users": User.objects.count(),

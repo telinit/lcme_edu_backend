@@ -2,7 +2,7 @@ import re
 import uuid
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, update_last_login
 from django.db.migrations import serializer
 from django.db.models import Q, F
 from drf_yasg.utils import swagger_auto_schema
@@ -17,9 +17,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT, HTTP_404_NOT_FOUND, \
-    HTTP_406_NOT_ACCEPTABLE
+    HTTP_406_NOT_ACCEPTABLE, HTTP_500_INTERNAL_SERVER_ERROR
 
-from .models import User
+from .models import User, MultiToken
 from ..course.models import CourseEnrollment
 from ..education.api import EducationShallowSerializer, EducationDeepSerializer
 from ..education.models import Education
@@ -118,6 +118,8 @@ class UserViewSet(EduModelViewSet):
     class UserPermissions(BasePermission):
 
         def has_permission(self, request: Request, view: "UserViewSet"):
+            if view.action == "impersonate":
+                return request.user and request.user.is_superuser
             if view.action in ["login", "reset_password_request", "reset_password_complete", "set_password", "set_email"]:
                 return True
             elif view.action == "create":
@@ -165,8 +167,9 @@ class UserViewSet(EduModelViewSet):
         user = authenticate(username=request.data["username"], password=request.data["password"])
         if user is not None:
             login(request, user)
-            Token.objects.filter(user=user).delete()
-            new_token = Token.objects.create(user=user)
+            MultiToken.objects.filter(user=user).delete()
+            new_token = MultiToken.objects.create(user=user)
+            update_last_login(None, user, )
             return Response(TokenSerializer({"key": new_token.key, "user": new_token.user}).data)
         else:
             return Response('Wrong credentials', status=HTTP_403_FORBIDDEN)
@@ -277,8 +280,21 @@ class UserViewSet(EduModelViewSet):
 
         return Response('', status=HTTP_400_BAD_REQUEST)
 
-
     @swagger_auto_schema(responses={200: UserDeepSerializer})
     @action(methods=['GET'], detail=False)
     def self(self, request: Request):
         return Response(UserDeepSerializer(request.user).data)
+
+    @swagger_auto_schema(responses={200: "OK"})
+    @action(methods=['GET'], detail=True)
+    def impersonate(self, request: Request, pk):
+        if not User.objects.filter(id=pk):
+            return Response('Not found', status=HTTP_404_NOT_FOUND)
+
+        if request.auth:
+            request.auth.user_id = pk
+            request.auth.save()
+
+            return Response()
+        else:
+            return Response(status=HTTP_500_INTERNAL_SERVER_ERROR)
