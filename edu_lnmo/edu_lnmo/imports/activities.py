@@ -35,8 +35,13 @@ class ActivitiesDataImporter(CSVDataImporter):
 
         for old_rec in r:
             rec = dict()
+            all_empty = True
             for k in old_rec:
+                all_empty &= (strip(old_rec[k]) == "")
                 rec[str(k).strip().capitalize()] = old_rec[k]
+
+            if all_empty:
+                continue
 
             act, _ = Activity.objects.get_or_create(
                 content_type = Activity.ActivityContentType.GEN,
