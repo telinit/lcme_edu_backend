@@ -1,12 +1,13 @@
 from django.contrib.auth.models import AnonymousUser
 from rest_framework import permissions, serializers, viewsets
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Education, EducationSpecialization
 from ..common.api import DepartmentSerializer
+from ..user.auth import MultiTokenAuthentication
 from ..user.models import User
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated
 
@@ -51,7 +52,7 @@ class EducationViewSet(EduModelViewSet):
                 return request_user_is_authenticated(request)
 
     serializer_class = EducationShallowSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [EducationPermissions]
 
     def get_queryset(self):
@@ -84,5 +85,5 @@ class EducationSpecializationViewSet(EduModelViewSet):
 
     queryset = EducationSpecialization.objects.all()
     serializer_class = EducationSpecializationSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [EducationSpecializationPermissions]

@@ -3,12 +3,13 @@ import uuid
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import QuerySet, Q
 from rest_framework import viewsets, serializers, permissions
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 
 from .models import Activity, Olympiad, OlympiadParticipation
 from ..course.models import Course, CourseEnrollment
+from ..user.auth import MultiTokenAuthentication
 from ..user.models import User
 from ..util.rest import request_user_is_staff, EduModelViewSet, request_user_is_authenticated, EduModelSerializer, \
     EduModelReadSerializer
@@ -40,7 +41,7 @@ class OlympiadViewSet(EduModelViewSet):
             return Olympiad.objects.all()
 
     serializer_class = OlympiadSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [OlympiadPermissions]
     filterset_fields = ['name', 'category', 'website', 'location', 'department__organization__name', 'department__name']
     search_fields = ['name', 'category', 'website', 'location', 'department__organization__name', 'department__name']
@@ -73,7 +74,7 @@ class OlympiadParticipationViewSet(EduModelViewSet):
             return OlympiadParticipation.objects.all()
 
     serializer_class = OlympiadParticipationSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [OlympiadParticipationPermissions]
     filterset_fields = ['date', 'olympiad__id', 'person__id', 'date', 'award', 'team_member']
     search_fields = ['date', 'award']

@@ -1,5 +1,5 @@
 from rest_framework import serializers, viewsets, permissions
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.fields import IntegerField, CharField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
@@ -7,6 +7,7 @@ from rest_framework.serializers import Serializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Organization, Department
+from ..user.auth import MultiTokenAuthentication
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated
 
 
@@ -46,7 +47,7 @@ class OrganizationViewSet(EduModelViewSet):
 
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [OrganizationPermissions]
 
 
@@ -67,5 +68,5 @@ class DepartmentViewSet(EduModelViewSet):
 
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [DepartmentPermissions]

@@ -10,6 +10,7 @@ from rest_framework.viewsets import ViewSet
 from ..activity.models import Activity
 from ..course.models import Course
 from ..mark.models import Mark
+from ..user.auth import MultiTokenAuthentication
 from ..user.models import User
 
 
@@ -33,5 +34,5 @@ class StatsViewSet(ViewSet):
         ser = __class__.CountersSerializer(obj)
         return Response(ser.data)
 
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [IsAuthenticated]

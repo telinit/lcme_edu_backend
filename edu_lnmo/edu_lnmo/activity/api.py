@@ -5,7 +5,7 @@ from django.db import transaction
 from django.db.models import QuerySet
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, serializers, permissions
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.fields import CharField, IntegerField, UUIDField
 from rest_framework.permissions import BasePermission
@@ -18,6 +18,7 @@ from .models import Activity
 from ..common.api import ErrorMessageSerializer
 from ..course.models import Course, CourseEnrollment
 from ..imports.activities import ActivitiesDataImporter
+from ..user.auth import MultiTokenAuthentication
 from ..user.models import User
 from ..util.rest import request_user_is_staff, EduModelViewSet, request_user_is_authenticated, EduModelSerializer, \
     EduModelReadSerializer
@@ -121,7 +122,7 @@ class ActivityViewSet(EduModelViewSet):
                 return activities
 
     serializer_class = ActivitySerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [ActivityPermissions]
     filterset_fields = ['content_type', 'course', 'group']
     search_fields = ['title', 'keywords', 'lesson_type']

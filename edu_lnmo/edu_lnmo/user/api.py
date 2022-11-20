@@ -8,8 +8,7 @@ from django.db.models import Q, F
 from drf_yasg.utils import swagger_auto_schema
 from jwt import PyJWT
 from rest_framework import serializers, viewsets, permissions
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.authtoken.models import Token
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action, permission_classes
 from rest_framework.fields import SerializerMethodField
 from rest_framework.permissions import BasePermission
@@ -19,6 +18,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT, HTTP_404_NOT_FOUND, \
     HTTP_406_NOT_ACCEPTABLE, HTTP_500_INTERNAL_SERVER_ERROR
 
+from .auth import MultiTokenAuthentication
 from .models import User, MultiToken
 from ..course.models import CourseEnrollment
 from ..education.api import EducationShallowSerializer, EducationDeepSerializer
@@ -109,7 +109,7 @@ class TokenSerializer(serializers.Serializer):
     key = serializers.CharField(max_length=40)
 
     class Meta(EduModelSerializer.Meta):
-        model = Token
+        model = MultiToken
         fields = "__all__"
         depth = 1
 
@@ -138,7 +138,7 @@ class UserViewSet(EduModelViewSet):
                 return False
 
     serializer_class = UserShallowSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [UserPermissions]
 
     def get_queryset(self):

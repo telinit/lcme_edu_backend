@@ -3,7 +3,7 @@ from django.db import transaction
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, viewsets, permissions
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField, UUIDField, DictField, ListField
 from rest_framework.permissions import BasePermission
@@ -20,6 +20,7 @@ from ..common.api import ErrorMessageSerializer
 from ..education.api import EducationSpecializationSerializer
 from ..file.api import FileSerializer
 from ..user.api import UserShallowSerializer
+from ..user.auth import MultiTokenAuthentication
 from ..user.models import User
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated, \
     EduModelReadSerializer, EduModelWriteSerializer
@@ -187,7 +188,7 @@ class CourseViewSet(EduModelViewSet):
             return CourseEnrollment.get_courses_of_user(users).distinct()
 
     serializer_class = CourseShallowSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [CoursePermissions]
     filterset_fields = ["for_specialization", "for_group", "for_class", "enrollments__person", "enrollments__role"]
     search_fields = ["title", "description"]
@@ -225,6 +226,6 @@ class CourseEnrollmentViewSet(EduModelViewSet):
         else:
             return CourseEnrollmentReadSerializer
 
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [CourseEnrollmentPermissions]
     filterset_fields = ['person', 'course', 'role', 'finished_on']

@@ -1,13 +1,14 @@
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q
 from rest_framework import permissions, viewsets, serializers
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Message, MessageThread
 from ..activity.models import Activity
+from ..user.auth import MultiTokenAuthentication
 from ..user.models import User
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated
 
@@ -70,7 +71,7 @@ class MessageViewSet(EduModelViewSet):  # TODO: Secure
             return Message.objects.filter(Q(sender=u) | Q(receiver=u) | Q(thread__members__in=u))
 
     serializer_class = MessageSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [MessagePermissions]
 
 
@@ -113,5 +114,5 @@ class MessageThreadViewSet(EduModelViewSet):
             return MessagePrivate.objects.filter(Q(sender=u) | Q(receiver=u))
 
     serializer_class = MessageThreadSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [MultiTokenAuthentication]
     permission_classes = [MessageThreadPermissions]
