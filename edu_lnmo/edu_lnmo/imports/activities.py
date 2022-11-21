@@ -31,79 +31,88 @@ class ActivitiesDataImporter(CSVDataImporter):
 
         course = Course.objects.get(id=course_id)
 
-        i = 1 + (Activity.objects.filter(course=course).aggregate(Max('order'))['order__max'] or 0)
+        order = 1 + (Activity.objects.filter(course=course).aggregate(Max('order'))['order__max'] or 0)
+        i = 0
 
         for old_rec in r:
-            rec = dict()
-            all_empty = True
-            for k in old_rec:
-                all_empty &= (str(old_rec[k]).strip() == "")
-                rec[str(k).strip().capitalize()] = old_rec[k]
+            try:
+                rec = dict()
+                all_empty = True
+                for k in old_rec:
+                    val_list_all_empty  =   isinstance(old_rec[k], list) and all(map(lambda x : not x, old_rec[k]))
+                    val_empty           =   str(old_rec[k]).strip() == ""
+                    all_empty           &=  val_list_all_empty or val_empty
 
-            if all_empty:
-                continue
+                    rec[str(k).strip().capitalize()] = old_rec[k]
 
-            act, _ = Activity.objects.get_or_create(
-                content_type = Activity.ActivityContentType.GEN,
-                course = course,
-                title = rec["Тема"].strip(),
-                keywords = rec["Ключевое слово"].strip(),
-                lesson_type = rec["Форма занятия"].strip(),
-                is_hidden = False,
-                marks_limit = int(rec["Количество оценок"].strip()),
-                hours=int(rec["Часы"].strip()),
-                fgos_complient = str(rec["Фгос"]).strip().lower() == "да",
-                order = i,
-                date = self.parse_date(rec["Дата"].strip()),
-                group = rec["Раздел"].strip(),
-                scientific_topic = rec["Раздел научной дисциплины"].strip()
-            )
-            res.objects += [act]
-            res.report_rows += [[str(i), "Тема", rec["Тема"].strip()]]
-            i += 1
+                if all_empty:
+                    continue
 
-            hw = rec["Домашнее задание"].strip()
-            if hw != "":
-                act_hw, _ = Activity.objects.get_or_create(
-                    content_type=Activity.ActivityContentType.TSK,
-                    course=course,
-                    title=f"Домашнее задание",
-                    keywords=rec["Ключевое слово"].strip(),
-                    lesson_type="Домашняя работа",
-                    is_hidden=False,
-                    marks_limit=int(rec["Количество оценок"].strip()),
-                    hours=1,
-                    fgos_complient=str(rec["Фгос"]).strip().lower() == "да",
-                    order=i,
-                    date=self.parse_date(rec["Дата"].strip()),
-                    group=rec["Раздел"].strip(),
-                    scientific_topic=rec["Раздел научной дисциплины"].strip(),
-                    body=hw,
-                    linked_activity=act
+                act, _ = Activity.objects.get_or_create(
+                    content_type = Activity.ActivityContentType.GEN,
+                    course = course,
+                    title = rec["Тема"].strip(),
+                    keywords = rec["Ключевое слово"].strip(),
+                    lesson_type = rec["Форма занятия"].strip(),
+                    is_hidden = False,
+                    marks_limit = int(rec["Количество оценок"].strip()),
+                    hours=int(rec["Часы"].strip()),
+                    fgos_complient = str(rec["Фгос"]).strip().lower() == "да",
+                    order = order,
+                    date = self.parse_date(rec["Дата"].strip()),
+                    group = rec["Раздел"].strip(),
+                    scientific_topic = rec["Раздел научной дисциплины"].strip()
                 )
-                res.objects += [act_hw]
-                res.report_rows += [[str(i), "Домашнее задание", rec["Тема"].strip()]]
-                i += 1
+                res.objects += [act]
+                res.report_rows += [[str(order), "Тема", rec["Тема"].strip()]]
+                order += 1
 
-            refs = rec["Материалы урока"].strip()
-            if refs != "":
-                act_refs, _ = Activity.objects.get_or_create(
-                    content_type=Activity.ActivityContentType.TXT,
-                    course=course,
-                    title=f"Материалы урока",
-                    keywords=rec["Ключевое слово"].strip(),
-                    is_hidden=False,
-                    fgos_complient=str(rec["Фгос"]).strip().lower() == "да",
-                    order=i,
-                    date=self.parse_date(rec["Дата"].strip()),
-                    group=rec["Раздел"].strip(),
-                    scientific_topic=rec["Раздел научной дисциплины"].strip(),
-                    body=refs,
-                    linked_activity=act,
-                    marks_limit=0
-                )
-                res.objects += [act_refs]
-                res.report_rows += [[str(i), "Материалы урока", rec["Тема"].strip()]]
+                hw = rec["Домашнее задание"].strip()
+                if hw != "":
+                    act_hw, _ = Activity.objects.get_or_create(
+                        content_type=Activity.ActivityContentType.TSK,
+                        course=course,
+                        title=f"Домашнее задание",
+                        keywords=rec["Ключевое слово"].strip(),
+                        lesson_type="Домашняя работа",
+                        is_hidden=False,
+                        marks_limit=int(rec["Количество оценок"].strip()),
+                        hours=1,
+                        fgos_complient=str(rec["Фгос"]).strip().lower() == "да",
+                        order=order,
+                        date=self.parse_date(rec["Дата"].strip()),
+                        group=rec["Раздел"].strip(),
+                        scientific_topic=rec["Раздел научной дисциплины"].strip(),
+                        body=hw,
+                        linked_activity=act
+                    )
+                    res.objects += [act_hw]
+                    res.report_rows += [[str(order), "Домашнее задание", rec["Тема"].strip()]]
+                    order += 1
+
+                refs = rec["Материалы урока"].strip()
+                if refs != "":
+                    act_refs, _ = Activity.objects.get_or_create(
+                        content_type=Activity.ActivityContentType.TXT,
+                        course=course,
+                        title=f"Материалы урока",
+                        keywords=rec["Ключевое слово"].strip(),
+                        is_hidden=False,
+                        fgos_complient=str(rec["Фгос"]).strip().lower() == "да",
+                        order=order,
+                        date=self.parse_date(rec["Дата"].strip()),
+                        group=rec["Раздел"].strip(),
+                        scientific_topic=rec["Раздел научной дисциплины"].strip(),
+                        body=refs,
+                        linked_activity=act,
+                        marks_limit=0
+                    )
+                    res.objects += [act_refs]
+                    res.report_rows += [[str(order), "Материалы урока", rec["Тема"].strip()]]
+                    order += 1
+
                 i += 1
+            except Exception as e:
+                raise Exception(f"Failed to import a record {i} ({old_rec}): {e}")
 
         return res
