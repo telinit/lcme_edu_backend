@@ -199,12 +199,40 @@ class CourseEnrollmentViewSet(EduModelViewSet):
 
         def has_permission(self, request: Request, view: "CourseEnrollmentViewSet"):
             if view.action == "create":
-                return request_user_is_staff(request)
+                def teacher_adds_student():
+                    if not request_user_is_authenticated(request) or not request.data:
+                        return False
+
+                    p = CourseEnrollmentWriteSerializer(data=request.data)
+
+                    if not p.is_valid():
+                        return False
+
+                    return p.validated_data['role'] == CourseEnrollment.EnrollmentRole.student and \
+                           CourseEnrollment \
+                               .get_courses_of_teacher(request.user)\
+                               .filter(id=p.validated_data['course'])\
+                               .exists()
+
+                return request_user_is_staff(request) or teacher_adds_student()
             else:
                 return request_user_is_authenticated(request)
 
         def has_object_permission(self, request: Request, view: "CourseEnrollmentViewSet", obj: CourseEnrollment):
-            if view.action in ["update", "partial_update", "destroy"]:
+            if view.action in ["destroy"]:
+                def teacher_removes_student():
+                    if not request_user_is_authenticated(request):
+                        return False
+
+                    return obj.role == CourseEnrollment.EnrollmentRole.student and \
+                           CourseEnrollment \
+                               .get_courses_of_teacher(request.user) \
+                               .filter(id=obj.course.id) \
+                               .exists()
+
+                return request_user_is_staff(request) or \
+                    teacher_removes_student()
+            elif view.action in ["update", "partial_update"]:
                 return request_user_is_staff(request)
             else:
                 return request_user_is_authenticated(request)

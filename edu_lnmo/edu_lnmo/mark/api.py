@@ -110,3 +110,6 @@ class MarkViewSet(EduModelViewSet):
     serializer_class = MarkSerializer
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [MarkPermissions]
+
+    filterset_fields = ["author", "student", "value", "activity"]
+    search_fields = ["comment"]
