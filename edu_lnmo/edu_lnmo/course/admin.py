@@ -13,6 +13,7 @@ class CourseAdmin(VersionAdmin):
         'for_specialization__name',
         'title'
     ]
+    list_per_page = 500
 
 
 @admin.register(CourseEnrollment)
@@ -27,6 +28,7 @@ class CourseEnrollmentAdmin(VersionAdmin):
         'person__username',
         'course__title'
     ]
+    list_per_page = 500
 
     @admin.display(description='Курс', ordering='course__title')
     def get_course_title(self, enr: CourseEnrollment):

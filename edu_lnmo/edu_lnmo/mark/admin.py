@@ -16,3 +16,4 @@ class MarkAdmin(VersionAdmin):
         'comment',
         'activity'
     ]
+    list_per_page = 500

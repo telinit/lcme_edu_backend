@@ -16,6 +16,7 @@ class OlympiadAdmin(VersionAdmin):
         'department',
         'website'
     ]
+    list_per_page = 500
 
 
 @admin.register(OlympiadParticipation)
@@ -28,3 +29,4 @@ class OlympiadParticipationAdmin (VersionAdmin):
         'person',
         'award'
     ]
+    list_per_page = 500

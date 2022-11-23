@@ -13,3 +13,4 @@ class ActivityAdmin(VersionAdmin):
         'title',
         'course'
     ]
+    list_per_page = 500

@@ -14,3 +14,4 @@ class UnreadObjectAdmin(VersionAdmin):
         'type',
         'user'
     ]
+    list_per_page = 500

@@ -15,6 +15,7 @@ class MessageAdmin(VersionAdmin):
         'receiver',
         'body'
     ]
+    list_per_page = 500
 
 
 @admin.register(MessageThread)
@@ -29,6 +30,7 @@ class MessageThreadAdmin(VersionAdmin):
         'support_status',
         'group'
     ]
+    list_per_page = 500
 
 @admin.register(ThreadGroup)
 class ThreadGroupAdmin(VersionAdmin):
@@ -39,3 +41,4 @@ class ThreadGroupAdmin(VersionAdmin):
         'name',
         'parent'
     ]
+    list_per_page = 500

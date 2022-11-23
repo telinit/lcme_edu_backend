@@ -12,3 +12,4 @@ class FileAdmin(VersionAdmin):
     search_fields = [
         'name'
     ]
+    list_per_page = 500

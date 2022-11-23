@@ -13,6 +13,7 @@ class EducationSpecializationAdmin(VersionAdmin):
         'name',
         'department__name'
     ]
+    list_per_page = 500
 
 
 @admin.register(Education)
@@ -26,3 +27,4 @@ class EducationAdmin(VersionAdmin):
         'student__middle_name',
         'student__username'
     ]
+    list_per_page = 500

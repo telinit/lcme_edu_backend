@@ -13,6 +13,7 @@ class OrganizationAdmin(VersionAdmin):
         'name',
         'name_short'
     ]
+    list_per_page = 500
 
 
 @admin.register(Department)
@@ -24,3 +25,4 @@ class DepartmentAdmin(VersionAdmin):
         'name',
         'organization'
     ]
+    list_per_page = 500

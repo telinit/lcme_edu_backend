@@ -31,6 +31,7 @@ class CustomUserAdmin(VersionAdmin, UserAdmin):
     add_form = UserCreationForm
     list_display = ('username', 'last_name', 'first_name', 'middle_name', 'email')
     ordering = ('username', 'last_name', 'first_name', 'middle_name')
+    list_per_page = 500
 
     f = ('username', 'email', 'password', 'pw_enc',
          'first_name', 'middle_name', 'last_name',
