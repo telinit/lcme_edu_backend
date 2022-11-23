@@ -11,6 +11,10 @@ class CoursesImportResult(object):
     objects = []
     report_rows = [["Фамилия","Имя","Отчество","Логин","Пароль"]]
 
+    def __init__(self):
+        self.objects = []
+        self.report_rows = [["Фамилия","Имя","Отчество","Логин","Пароль"]]
+
     def save_report(self, file_name: str):
         open(file_name, "w").writelines(map(lambda ws: ",".join(ws) + "\n", self.report_rows))
 

@@ -24,6 +24,9 @@ class Message(CommonObject):
     manual_category = CharField(verbose_name="Раздел", max_length=255, blank=True, null=True)
     manual_audience = CharField(verbose_name="Предназначено для ролей", max_length=255, blank=True, null=True)
 
+    class Meta:
+        verbose_name = "Сообщение"
+        verbose_name_plural = "Сообщения"
 
 class MessageThread(CommonObject):
     class ThreadType(TextChoices):
@@ -50,7 +53,15 @@ class MessageThread(CommonObject):
 
     group = ForeignKey(to="ThreadGroup", verbose_name="Группа тем", related_name="threads", null=True, blank=True, on_delete=SET_NULL)
 
+    class Meta:
+        verbose_name = "Тема сообщений"
+        verbose_name_plural = "Темы сообщений"
+
 class ThreadGroup(CommonObject):
     name = CharField(verbose_name="Название", max_length=255, blank=False, null=False)
 
     parent = ForeignKey(to="ThreadGroup", verbose_name="Родительская группа", related_name="children", null=True, blank=True, on_delete=SET_NULL)
+
+    class Meta:
+        verbose_name = "Группа тем сообщений"
+        verbose_name_plural = "Группы тем сообщений"

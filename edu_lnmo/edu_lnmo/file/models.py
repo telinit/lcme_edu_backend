@@ -12,3 +12,7 @@ class File(CommonObject):
 
     def __str__(self):
         return f"{self.name} ({self.mime_type}, {self.size})"
+
+    class Meta:
+        verbose_name = "Файл"
+        verbose_name_plural = "Файлы"

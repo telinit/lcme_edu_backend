@@ -16,3 +16,7 @@ class Mark(CommonObject):
 
     def __str__(self):
         return f"{self.student}: {self.activity}: {self.value}"
+
+    class Meta:
+        verbose_name = "Оценка"
+        verbose_name_plural = "Оценки"

@@ -14,6 +14,10 @@ class EducationSpecialization(CommonObject):
     def __str__(self):
         return f"{self.department}: {self.name}"
 
+    class Meta:
+        verbose_name = "Направление обучения"
+        verbose_name_plural = "Направления обучения"
+
 
 class Education(CommonObject):
     student         = ForeignKey(User, verbose_name="Учащийся", related_name="education", on_delete=CASCADE)
@@ -31,6 +35,10 @@ class Education(CommonObject):
         related_name="educations",
         on_delete=CASCADE
     )
+
+    class Meta:
+        verbose_name = "Обучение"
+        verbose_name_plural = "Обучения"
 
     def __str__(self):
         return f"{self.student}: {self.started} ({self.starting_class}) - {self.finished} ({self.finishing_class})"

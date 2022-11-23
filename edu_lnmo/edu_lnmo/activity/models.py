@@ -74,3 +74,8 @@ class Activity(CommonObject):
 
     def __str__(self):
         return f"{self.course}: {self.order}. {self.title}"
+
+    class Meta:
+        verbose_name = "Активность"
+        verbose_name_plural = "Активности"
+

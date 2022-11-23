@@ -38,6 +38,10 @@ class Course(CommonObject):
         info = ", ".join([*filter(lambda x:x, [str(self.for_specialization), self.for_class, self.for_group])])
         return f"{self.title}" + (f" ({info})" if info else "")
 
+    class Meta:
+        verbose_name = "Курс"
+        verbose_name_plural = "Курсы"
+
     @property
     def teachers(self) -> QuerySet:
         return CourseEnrollment.objects.filter(
@@ -80,6 +84,10 @@ class CourseEnrollment(CommonObject):
 
     def __str__(self):
         return f"{self.role}: {self.person.full_name()} -> {self.course}"
+
+    class Meta:
+        verbose_name = "Запись на курс"
+        verbose_name_plural = "Записи на курсы"
 
     @classmethod
     def get_courses_of_teacher(cls, user) -> QuerySet:

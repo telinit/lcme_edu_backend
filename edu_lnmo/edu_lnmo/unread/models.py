@@ -21,3 +21,7 @@ class UnreadObject(CommonObject):
     type = CharField(verbose_name="Тип объекта", choices=ObjType.choices, default=ObjType.UNK, max_length=3)
     user = ForeignKey(User, verbose_name="Пользователь", on_delete=CASCADE)
     created = DateTimeField(verbose_name="Время")
+
+    class Meta:
+        verbose_name = "Непрочитанное"
+        verbose_name_plural = "Непрочитанные"

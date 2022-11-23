@@ -39,6 +39,10 @@ class User(AbstractUser, CommonObject):
     objects: UserObjects
 
     class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+
+    class Meta:
         indexes = [
             Index(fields=['last_name']),
             Index(fields=['first_name']),
@@ -63,3 +67,7 @@ class MultiToken(Token):
         AUTH_USER_MODEL, related_name='tokens',
         on_delete=CASCADE, verbose_name=_("User")
     )
+
+    class Meta:
+        verbose_name = "Токен"
+        verbose_name_plural = "Токены"

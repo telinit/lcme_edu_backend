@@ -18,6 +18,9 @@ class Olympiad(CommonObject):
     def __str__(self):
         return f"{self.name}"
 
+    class Meta:
+        verbose_name = "Олимпиада"
+        verbose_name_plural = "Олимпиады"
 
 class OlympiadParticipation(CommonObject):
     olympiad = ForeignKey(Olympiad, verbose_name="Олимпиада", on_delete=CASCADE)
@@ -30,3 +33,6 @@ class OlympiadParticipation(CommonObject):
     def __str__(self):
         return f"{self.olympiad}: {self.person}"
 
+    class Meta:
+        verbose_name = "Участие в олимпиаде"
+        verbose_name_plural = "Участия в олимпиадах"

@@ -10,8 +10,12 @@ from ..course.models import Course
 
 
 class ActivitiesImportResult(object):
-    objects = []
-    report_rows = [["Номер", "Тип объекта", "Тема"]]
+    objects: list[object]
+    report_rows: list[list[str]]
+
+    def __init__(self):
+        self.objects = []
+        self.report_rows = [["Номер", "Тип объекта", "Тема"]]
 
     def save_report(self, file_name: str):
         open(file_name, "w").writelines(map(lambda ws: ",".join(ws) + "\n", self.report_rows))
@@ -28,6 +32,8 @@ class ActivitiesDataImporter(CSVDataImporter):
     def do_import(self, data: str, course_id, sep=","):
         r = DictReader(data.splitlines(), delimiter=sep)
         res = ActivitiesImportResult()
+
+        print(res.report_rows)
 
         course = Course.objects.get(id=course_id)
 
