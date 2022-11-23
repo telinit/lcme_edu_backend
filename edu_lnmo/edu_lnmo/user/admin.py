@@ -29,7 +29,7 @@ class UserCreationForm(ModelForm):
 class CustomUserAdmin(VersionAdmin, UserAdmin):
     # The forms to add and change user instances
     add_form = UserCreationForm
-    list_display = ('username', 'last_name', 'first_name', 'middle_name')
+    list_display = ('username', 'last_name', 'first_name', 'middle_name', 'email')
     ordering = ('username', 'last_name', 'first_name', 'middle_name')
 
     f = ('username', 'email', 'password', 'pw_enc',

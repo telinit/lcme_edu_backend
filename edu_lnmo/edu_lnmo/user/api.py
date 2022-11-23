@@ -140,6 +140,9 @@ class UserViewSet(EduModelViewSet):
     serializer_class = UserShallowSerializer
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [UserPermissions]
+    filterset_fields = ["first_name", "last_name", "middle_name",
+                        "enrollments__course","enrollments__role","enrollments__finished_on"]
+    search_fields = ["first_name", "last_name", "middle_name"]
 
     def get_queryset(self):
         u: User = self.request.user

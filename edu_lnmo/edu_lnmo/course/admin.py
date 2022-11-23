@@ -18,8 +18,8 @@ class CourseAdmin(VersionAdmin):
 @admin.register(CourseEnrollment)
 class CourseEnrollmentAdmin(VersionAdmin):
     autocomplete_fields = ['person', 'course']
-    list_display = ['person', 'course', 'role', 'finished_on']
-    list_filter = ('person', 'course', 'role', 'finished_on')
+    list_display = ['get_course_title', 'get_course_class', 'get_course_specialization', 'get_course_group', 'role', 'person', 'finished_on']
+    list_filter = ('course__title', 'course__for_class', 'course__for_specialization__name', 'course__for_group', 'role', 'finished_on')
     search_fields = [
         'person__first_name',
         'person__last_name',
@@ -28,3 +28,18 @@ class CourseEnrollmentAdmin(VersionAdmin):
         'course__title'
     ]
 
+    @admin.display(description='Курс', ordering='course__title')
+    def get_course_title(self, enr: CourseEnrollment):
+        return enr.course.title
+
+    @admin.display(description='Класс', ordering='course__for_class')
+    def get_course_class(self, enr: CourseEnrollment):
+        return enr.course.for_class
+
+    @admin.display(description='Направление', ordering='course__for_specialization')
+    def get_course_specialization(self, enr: CourseEnrollment):
+        return enr.course.for_specialization
+
+    @admin.display(description='Группа', ordering='course__for_group')
+    def get_course_group(self, enr: CourseEnrollment):
+        return enr.course.for_group
