@@ -211,7 +211,7 @@ class CourseEnrollmentViewSet(EduModelViewSet):
                     return p.validated_data['role'] == CourseEnrollment.EnrollmentRole.student and \
                            CourseEnrollment \
                                .get_courses_of_teacher(request.user)\
-                               .filter(id=p.validated_data['course'])\
+                               .filter(id=p.validated_data['course'].id)\
                                .exists()
 
                 return request_user_is_staff(request) or teacher_adds_student()
@@ -242,10 +242,9 @@ class CourseEnrollmentViewSet(EduModelViewSet):
 
         if isinstance(u, AnonymousUser):
             return None
-        elif u.is_staff or u.is_superuser:
-            return CourseEnrollment.objects.all()
         else:
-            return CourseEnrollment.objects.filter(Q(person=u) | Q(person__in=u.children))
+            return CourseEnrollment.objects.all()
+
 
     def get_serializer_class(self):
         method = self.request.method

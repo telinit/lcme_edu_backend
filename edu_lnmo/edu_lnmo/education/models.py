@@ -44,8 +44,14 @@ class Education(CommonObject):
         return f"{self.student}: {self.started} ({self.starting_class}) - {self.finished} ({self.finishing_class})"
 
     def get_current_class(self):
-        year = datetime.date.today().year
-        y_diff = year - self.started.year
+        def get_edu_year(date):
+            if date.month > 8:
+                return date.year
+            else:
+                return date.year - 1
+
+        today = datetime.date.today()
+        y_diff = get_edu_year(today) - get_edu_year(self.started)
 
         m: Match = re.match(r"(\d+)(.*)", self.starting_class)
 

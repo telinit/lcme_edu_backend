@@ -1,16 +1,17 @@
 import re
 import uuid
+from typing import Optional
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import AnonymousUser, update_last_login
 from django.db.migrations import serializer
 from django.db.models import Q, F
-from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import swagger_auto_schema, swagger_serializer_method
 from jwt import PyJWT
 from rest_framework import serializers, viewsets, permissions
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action, permission_classes
-from rest_framework.fields import SerializerMethodField
+from rest_framework.fields import SerializerMethodField, CharField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -21,8 +22,8 @@ from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST, HTTP
 from .auth import MultiTokenAuthentication
 from .models import User, MultiToken
 from ..course.models import CourseEnrollment
-from ..education.api import EducationShallowSerializer, EducationDeepSerializer
-from ..education.models import Education
+from ..education.api import EducationShallowSerializer, EducationDeepSerializer, EducationSpecializationSerializer
+from ..education.models import Education, EducationSpecialization
 from ..settings import EMAIL_JWT_SECRET
 from ..util.email import EmailManager
 from ..util.rest import request_user_is_staff, EduModelViewSet, EduModelSerializer
@@ -32,19 +33,20 @@ from ..util.string import email_ok
 class UserShallowSerializer(EduModelSerializer):
     roles = SerializerMethodField(method_name="get_roles", read_only=True, help_text="List of user's roles. A set of: admin, staff, teacher, student, parent")
     current_class = SerializerMethodField(method_name="get_class", read_only=True, help_text="Student's current class. null if none.")
+    current_spec = SerializerMethodField(method_name="get_spec", read_only=True, help_text="Student's current education specialization. null if none.")
 
     def get_roles(self, obj, *args, **kwargs) -> list[str]:
         u: User = obj
 
         res = []
 
-        if u.children.all().count() > 0:
+        if len(u.children.all()) > 0:
             res += ["parent"]
 
-        if u.enrollments.filter(role=CourseEnrollment.EnrollmentRole.student).count() > 0:
+        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.student, u.enrollments.all())]) > 0:
             res += ["student"]
 
-        if u.enrollments.filter(role=CourseEnrollment.EnrollmentRole.teacher).count() > 0:
+        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.teacher, u.enrollments.all())]) > 0:
             res += ["teacher"]
 
         if u.is_staff:
@@ -55,22 +57,32 @@ class UserShallowSerializer(EduModelSerializer):
 
         return res
 
-    def get_class(self, user):
+    @swagger_serializer_method(serializer_or_field=CharField)
+    def get_class(self, user) -> Optional[str]:
 
-        edu = Education.objects\
-            .filter(student=user, finished__isnull=True)\
-            .order_by('-started')\
-            .last()
+        edus = [*filter(lambda edu: edu.finished == None, user.education.all())]
+        edus.sort(key=lambda edu: edu.started)
 
-        if not edu:
+        if not edus:
             return None
         else:
-            return edu.get_current_class()
+            return edus[0].get_current_class()
+
+    @swagger_serializer_method(serializer_or_field=EducationSpecializationSerializer)
+    def get_spec(self, user) -> Optional[EducationSpecializationSerializer]:
+
+        edus = [*filter(lambda edu: edu.finished == None, user.education.all())]
+        edus.sort(key=lambda edu: edu.started)
+
+        if not edus:
+            return None
+        else:
+            return EducationSpecializationSerializer(instance=edus[0].specialization).data
 
     class Meta(EduModelSerializer.Meta):
         model = User
         # fields = '__all__'
-        exclude = ['password', 'pw_enc', 'user_permissions']
+        exclude = ['password', 'pw_enc', 'user_permissions', 'groups']
 
 
 class UserDeepSerializer(UserShallowSerializer):
@@ -149,7 +161,18 @@ class UserViewSet(EduModelViewSet):
         if isinstance(u, AnonymousUser):
             return None
         else:
-            return User.objects.all()
+            return User.objects.prefetch_related(
+                'children',
+                'parents',
+                'enrollments',
+                'education',
+                'education__specialization',
+                'education__specialization__department',
+                'education__specialization__department__organization',
+                # 'groups',
+                # 'children__groups',
+                # 'parents__groups',
+            ).all()
 
     @swagger_auto_schema(responses={200: UserDeepSerializer()})
     @action(methods=['GET'], detail=True, url_path='deep')
