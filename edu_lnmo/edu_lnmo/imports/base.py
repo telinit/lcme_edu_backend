@@ -9,5 +9,5 @@ class DataImporter(ABC, Generic[D]):
 
 
 class CSVDataImporter(DataImporter[str]):
-    def do_import(self, data: str):
+    def do_import(self, data: str, *args, **kwargs):
         pass

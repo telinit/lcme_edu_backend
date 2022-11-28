@@ -1,15 +1,18 @@
 import datetime
 import re
+from re import Match
+from typing import Any, Optional
 
 from django.db.models import *
+from django.db.models import ForeignKey, DateField, CharField
 
 from ..common.models import CommonObject
 from ..user.models import User
 
 
 class EducationSpecialization(CommonObject):
-    name        = CharField(max_length=255, verbose_name="Название")
-    department  = ForeignKey("Department", verbose_name="Подразделение учебного заведения", on_delete=CASCADE)
+    name: CharField[Any, Any]        = CharField(max_length=255, verbose_name="Название")
+    department: ForeignKey[Any, Any]  = ForeignKey("Department", verbose_name="Подразделение учебного заведения", on_delete=CASCADE)
 
     def __str__(self):
         return f"{self.department}: {self.name}"
@@ -20,16 +23,16 @@ class EducationSpecialization(CommonObject):
 
 
 class Education(CommonObject):
-    student         = ForeignKey(User, verbose_name="Учащийся", related_name="education", on_delete=CASCADE)
+    student: ForeignKey[Any, Any]         = ForeignKey(User, verbose_name="Учащийся", related_name="education", on_delete=CASCADE)
 
-    started         = DateField(verbose_name="Дата поступления")
-    finished        = DateField(verbose_name="Дата завершения", null=True, blank=True)
+    started: DateField[Any, Any]         = DateField(verbose_name="Дата поступления")
+    finished: DateField[Any, Any]        = DateField(verbose_name="Дата завершения", null=True, blank=True)
 
-    starting_class  = CharField(max_length=10, verbose_name="Класс поступления")
-    finishing_class = CharField(max_length=10, verbose_name="Класс завершения", null=True, blank=True)
+    starting_class: CharField[Any, Any]  = CharField(max_length=10, verbose_name="Класс поступления")
+    finishing_class: CharField[Any, Any] = CharField(max_length=10, verbose_name="Класс завершения", null=True, blank=True)
 
     #department      = ForeignKey(Department, verbose_name="Подразделение")
-    specialization  = ForeignKey(
+    specialization: ForeignKey[Any, Any]  = ForeignKey(
         EducationSpecialization,
         verbose_name="Направление обучения",
         related_name="educations",
@@ -43,7 +46,7 @@ class Education(CommonObject):
     def __str__(self):
         return f"{self.student}: {self.started} ({self.starting_class}) - {self.finished} ({self.finishing_class})"
 
-    def get_current_class(self):
+    def get_current_class(self) -> str:
         def get_edu_year(date):
             if date.month > 8:
                 return date.year
@@ -53,7 +56,7 @@ class Education(CommonObject):
         today = datetime.date.today()
         y_diff = get_edu_year(today) - get_edu_year(self.started)
 
-        m: Match = re.match(r"(\d+)(.*)", self.starting_class)
+        m: Optional[Match[str]] = re.match(r"(\d+)(.*)", self.starting_class)
 
         if not m:
             return str(5 + y_diff)

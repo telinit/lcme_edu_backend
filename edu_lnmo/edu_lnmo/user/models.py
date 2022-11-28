@@ -1,9 +1,11 @@
 import base64
+from typing import Any
 
 from Crypto.Cipher import PKCS1_OAEP
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.db.models import *
+from django.db.models import CharField, DateField, ImageField, TextField, ManyToManyField, ForeignKey
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
@@ -23,26 +25,20 @@ def validate_password(pw):
 
 
 class User(AbstractUser, CommonObject):
-    class UserObjects(QuerySet, UserManager):
-        pass
+    middle_name: CharField[Any, Any] = CharField(verbose_name="Отчество", max_length=255, blank=True, null=True)
+    birth_date: DateField[Any, Any]  = DateField(verbose_name="Дата рождения", null=True, blank=True)
+    avatar: ImageField      = ImageField(verbose_name="Аватар", null=True, blank=True)
 
-    middle_name = CharField(verbose_name="Отчество", max_length=255, blank=True, null=True)
-    birth_date  = DateField(verbose_name="Дата рождения", null=True, blank=True)
-    avatar      = ImageField(verbose_name="Аватар", null=True, blank=True)
+    pw_enc: TextField[Any, Any]      = TextField(verbose_name="Шифрованный пароль", blank=True, null=True)
 
-    pw_enc      = TextField(verbose_name="Шифрованный пароль", blank=True, null=True)
+    password: CharField[Any, Any]    = CharField(_("password"), max_length=128, validators=[validate_password])
 
-    password    = CharField(_("password"), max_length=128, validators=[validate_password])
-
-    children    = ManyToManyField("User", related_name="parents", verbose_name="Дети", blank=True)
-
-    objects: UserObjects
+    children: ManyToManyField[Any, Any]    = ManyToManyField("User", related_name="parents", verbose_name="Дети", blank=True)
 
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
-    class Meta:
         indexes = [
             Index(fields=['last_name']),
             Index(fields=['first_name']),
@@ -63,7 +59,7 @@ class User(AbstractUser, CommonObject):
 
 
 class MultiToken(Token):
-    user = ForeignKey(  # changed from OneToOne to ForeignKey
+    user: ForeignKey[Any, Any] = ForeignKey(  # type: ignore[assignment]
         AUTH_USER_MODEL, related_name='tokens',
         on_delete=CASCADE, verbose_name=_("User")
     )

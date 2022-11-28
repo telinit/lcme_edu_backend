@@ -1,8 +1,11 @@
 import uuid
+from typing import Any
 
 from django.contrib.auth.models import Group
 from django.db.models import *
+from django.db.models import UUIDField, DateTimeField, BooleanField, ForeignKey, CharField
 from django.db.models.manager import BaseManager
+from django.db.models.query import _QuerySet
 
 
 class CommonObject(Model):
@@ -11,33 +14,33 @@ class CommonObject(Model):
         verbose_name = "Объект"
         verbose_name_plural = "Объекты"
 
-    id = UUIDField(primary_key=True, null=False, default=uuid.uuid4)
-    created_at = DateTimeField(auto_now_add=True)
-    updated_at = DateTimeField(auto_now=True)
+    id          : UUIDField[Any, Any]       = UUIDField(primary_key=True, null=False, default=uuid.uuid4)
+    created_at  : DateTimeField[Any, Any]   = DateTimeField(auto_now_add=True)
+    updated_at  : DateTimeField[Any, Any]   = DateTimeField(auto_now=True)
 
-    objects: QuerySet
+    objects: BaseManager[Any]
 
 
 class Permission(Model):
-    invert_condition = BooleanField(verbose_name="Инвертировать условие", default=False)
-    do_allow = BooleanField(verbose_name="Разрешить доступ (или запретить)", default=False)
+    invert_condition: BooleanField[Any, Any]    = BooleanField(verbose_name="Инвертировать условие", default=False)
+    do_allow: BooleanField[Any, Any]            = BooleanField(verbose_name="Разрешить доступ (или запретить)", default=False)
 
-    user  = ForeignKey(
+    user: ForeignKey[Any, Any]                  = ForeignKey(
         to="User", related_name="direct_permissions", verbose_name="Пользователь",
         blank=True, null=True,
         on_delete=CASCADE)
-    group = ForeignKey(
+    group: ForeignKey[Any, Any]                 = ForeignKey(
         to=Group, related_name="direct_permissions", verbose_name="Группа пользователей",
         blank=True, null=True,
         on_delete=CASCADE
     )
-    for_class = CharField(verbose_name="Класс", max_length=255, blank=True, null=True)
-    spec = ForeignKey(
+    for_class: CharField[Any, Any]              = CharField(verbose_name="Класс", max_length=255, blank=True, null=True)
+    spec: ForeignKey[Any, Any]                  = ForeignKey(
         to="EducationSpecialization", related_name="direct_permissions", verbose_name="Направление обучения",
         blank=True, null=True,
         on_delete=CASCADE
     )
-    role = CharField(verbose_name="Роль", max_length=255, blank=True, null=True )
+    role: CharField[Any, Any]                   = CharField(verbose_name="Роль", max_length=255, blank=True, null=True )
 
     class Meta:
         verbose_name = "Право доступа"
@@ -45,10 +48,10 @@ class Permission(Model):
 
 
 class Organization(CommonObject):
-    name = CharField(verbose_name="Название", max_length=255)
-    name_short = CharField(verbose_name="Короткое название", max_length=255, blank=True, null=True)
+    name: CharField[Any, Any]       = CharField(verbose_name="Название", max_length=255)
+    name_short: CharField[Any, Any] = CharField(verbose_name="Короткое название", max_length=255, blank=True, null=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name_short}"
 
     class Meta:
@@ -57,11 +60,11 @@ class Organization(CommonObject):
 
 
 class Department(CommonObject):
-    organization    = ForeignKey(Organization, on_delete=CASCADE)
+    organization: ForeignKey[Any, Any]  = ForeignKey(Organization, on_delete=CASCADE)
 
-    name            = CharField(verbose_name="Название", max_length=255)
+    name: CharField[Any, Any]           = CharField(verbose_name="Название", max_length=255)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.organization}: {self.name}"
 
     class Meta:

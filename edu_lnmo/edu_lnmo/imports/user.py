@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 
 from django.db.models import Q
 from transliterate import translit
@@ -6,7 +7,8 @@ from transliterate import translit
 from ..education.models import Education
 from ..user.models import User
 
-def generate_username(first_name, middle_name, last_name) -> str:
+
+def generate_username(first_name: str, middle_name: str, last_name: str) -> str:
     t = lambda s: translit(s, 'ru', reversed=True)
     f = t(first_name[0]) if first_name else "_"
     m = t(middle_name[0]) if middle_name else "_"
@@ -14,7 +16,7 @@ def generate_username(first_name, middle_name, last_name) -> str:
     return f"{f}{m}{l}".replace("'", "")
 
 
-def create_user(first_name, middle_name, last_name):
+def create_user(first_name: str, middle_name: str, last_name: str) -> Tuple[User, bool]:
     user = User.objects.filter(
         last_name=last_name,
         first_name=first_name,
@@ -36,10 +38,12 @@ def create_user(first_name, middle_name, last_name):
             middle_name=middle_name,
             username=username_new
         )
+        created = True
     else:
         user = user[0]
+        created = False
 
-    return user
+    return user, created
 
 
 def generate_password(length=8) -> str:
