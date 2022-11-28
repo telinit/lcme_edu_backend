@@ -25,15 +25,15 @@ def validate_password(pw):
 
 
 class User(AbstractUser, CommonObject):
-    middle_name: CharField[Any, Any] = CharField(verbose_name="Отчество", max_length=255, blank=True, null=True)
-    birth_date: DateField[Any, Any]  = DateField(verbose_name="Дата рождения", null=True, blank=True)
+    middle_name = CharField(verbose_name="Отчество", max_length=255, blank=True, null=True)
+    birth_date  = DateField(verbose_name="Дата рождения", null=True, blank=True)
     avatar: ImageField      = ImageField(verbose_name="Аватар", null=True, blank=True)
 
-    pw_enc: TextField[Any, Any]      = TextField(verbose_name="Шифрованный пароль", blank=True, null=True)
+    pw_enc      = TextField(verbose_name="Шифрованный пароль", blank=True, null=True)
 
-    password: CharField[Any, Any]    = CharField(_("password"), max_length=128, validators=[validate_password])
+    password    = CharField(_("password"), max_length=128, validators=[validate_password])
 
-    children: ManyToManyField[Any, Any]    = ManyToManyField("User", related_name="parents", verbose_name="Дети", blank=True)
+    children    = ManyToManyField("User", related_name="parents", verbose_name="Дети", blank=True)
 
     class Meta:
         verbose_name = "Пользователь"
@@ -59,7 +59,7 @@ class User(AbstractUser, CommonObject):
 
 
 class MultiToken(Token):
-    user: ForeignKey[Any, Any] = ForeignKey(  # type: ignore[assignment]
+    user = ForeignKey(  # type: ignore[assignment]
         AUTH_USER_MODEL, related_name='tokens',
         on_delete=CASCADE, verbose_name=_("User")
     )

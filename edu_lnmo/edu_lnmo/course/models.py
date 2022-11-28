@@ -18,13 +18,13 @@ class Course(CommonObject):
         CLB = 'CLB', "Кружок"
         ELE = 'ELE', "Предмет по выбору"
 
-    type: CharField[Any, Any] = CharField(choices=CourseType.choices, default=CourseType.GEN, max_length=3)
+    type = CharField(choices=CourseType.choices, default=CourseType.GEN, max_length=3)
 
-    title: CharField[Any, Any] = CharField(max_length=255, verbose_name="Название", blank=False)
-    description: TextField[Any, Any] = TextField(verbose_name="Описание", blank=True, null=True)
+    title = CharField(max_length=255, verbose_name="Название", blank=False)
+    description = TextField(verbose_name="Описание", blank=True, null=True)
 
-    for_class: CharField[Any, Any] = CharField(max_length=10, verbose_name="Класс", blank=True)
-    for_specialization: ForeignKey[Any, Any] = ForeignKey(
+    for_class = CharField(max_length=10, verbose_name="Класс", blank=True)
+    for_specialization = ForeignKey(
         EducationSpecialization,
         verbose_name="Направление обучения",
         related_name="courses",
@@ -32,10 +32,10 @@ class Course(CommonObject):
         blank=True,
         null=True
     )
-    for_group: CharField[Any, Any] = CharField(verbose_name="Группа", max_length=255, null=True, blank=True)
+    for_group = CharField(verbose_name="Группа", max_length=255, null=True, blank=True)
 
-    logo: ForeignKey[Any, Any] = ForeignKey(File, related_name="course_logos", verbose_name="Логотип", blank=True, null=True, on_delete=SET_NULL)
-    cover: ForeignKey[Any, Any] = ForeignKey(File, related_name="course_covers", verbose_name="Обложка", blank=True, null=True, on_delete=SET_NULL)
+    logo = ForeignKey(File, related_name="course_logos", verbose_name="Логотип", blank=True, null=True, on_delete=SET_NULL)
+    cover = ForeignKey(File, related_name="course_covers", verbose_name="Обложка", blank=True, null=True, on_delete=SET_NULL)
 
     def __str__(self):
         info = ", ".join([*filter(lambda x:x, [str(self.for_specialization), self.for_class, self.for_group])])
@@ -80,10 +80,10 @@ class CourseEnrollment(CommonObject):
         teacher = 't', "Преподаватель"
         student = 's', "Учащийся"
 
-    person: ForeignKey[Any, Any] = ForeignKey(User, verbose_name="Пользователь", related_name="enrollments", on_delete=CASCADE)
-    course: ForeignKey[Any, Any] = ForeignKey(Course, verbose_name="Курс", related_name="enrollments", on_delete=CASCADE)
-    role: CharField[Any, Any] = CharField(choices=EnrollmentRole.choices, max_length=3)
-    finished_on: DateTimeField[Any, Any] = DateTimeField(verbose_name="Завершена", null=True, blank=True)
+    person = ForeignKey(User, verbose_name="Пользователь", related_name="enrollments", on_delete=CASCADE)
+    course = ForeignKey(Course, verbose_name="Курс", related_name="enrollments", on_delete=CASCADE)
+    role = CharField(choices=EnrollmentRole.choices, max_length=3)
+    finished_on = DateTimeField(verbose_name="Завершена", null=True, blank=True)
 
     def __str__(self):
         return f"{self.role}: {self.person.full_name()} -> {self.course}"

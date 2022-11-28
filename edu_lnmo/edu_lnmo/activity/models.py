@@ -20,36 +20,36 @@ class Activity(CommonObject):
         FIN  = 'FIN', "Итоговый контроль"
 
     # TODO: Implement first
-    content_type: CharField[Any, Any]        = CharField(choices=ActivityContentType.choices, default=ActivityContentType.GEN, max_length=3)
+    content_type        = CharField(choices=ActivityContentType.choices, default=ActivityContentType.GEN, max_length=3)
 
-    course: ForeignKey[Any, Any]              = ForeignKey(Course, verbose_name="Курс", related_name="activities", on_delete=CASCADE)
+    course              = ForeignKey(Course, verbose_name="Курс", related_name="activities", on_delete=CASCADE)
 
-    title: TextField[Any, Any]               = TextField(verbose_name="Название", blank=False)
-    keywords: CharField[Any, Any]            = CharField(max_length=255, verbose_name="Кодовое название", blank=True)
-    lesson_type: CharField[Any, Any]         = CharField(max_length=255, verbose_name="Тип занятия", blank=True)
+    title               = TextField(verbose_name="Название", blank=False)
+    keywords            = CharField(max_length=255, verbose_name="Кодовое название", blank=True)
+    lesson_type         = CharField(max_length=255, verbose_name="Тип занятия", blank=True)
 
-    is_hidden: BooleanField[Any, Any]           = BooleanField(verbose_name="Скрыта", default=False)
-    marks_limit: IntegerField[Any, Any]         = IntegerField(verbose_name="Лимит оценок", default=1)
-    hours: IntegerField[Any, Any]               = IntegerField(verbose_name="Количество часов", default=1)
+    is_hidden           = BooleanField(verbose_name="Скрыта", default=False)
+    marks_limit         = IntegerField(verbose_name="Лимит оценок", default=1)
+    hours               = IntegerField(verbose_name="Количество часов", default=1)
 
-    fgos_complient: BooleanField[Any, Any]      = BooleanField(verbose_name="Соответствие ФГОС", default=False)
+    fgos_complient      = BooleanField(verbose_name="Соответствие ФГОС", default=False)
 
-    order: IntegerField[Any, Any]               = IntegerField(verbose_name="Номер в списке курса")
-    date: DateField[Any, Any]                = DateField(verbose_name="Дата проведения", blank=True, null=True)
+    order               = IntegerField(verbose_name="Номер в списке курса")
+    date                = DateField(verbose_name="Дата проведения", blank=True, null=True)
 
-    group: CharField[Any, Any]               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)
-    scientific_topic: CharField[Any, Any]    = CharField(max_length=255, verbose_name="Научный раздел", blank=True, null=True)
+    group               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)
+    scientific_topic    = CharField(max_length=255, verbose_name="Научный раздел", blank=True, null=True)
 
-    body: TextField[Any, Any]                = TextField(blank=True)
-    files: ManyToManyField[Any, Any]               = ManyToManyField(File, verbose_name="Вложения/файлы", related_name="activities", blank=True)
+    body                = TextField(blank=True)
+    files               = ManyToManyField(File, verbose_name="Вложения/файлы", related_name="activities", blank=True)
 
-    due_date: DateTimeField[Any, Any]            = DateTimeField(verbose_name="Срок сдачи", null=True, blank=True)
-    submittable: BooleanField[Any, Any]         = BooleanField(verbose_name="Отправка решений разрешена", default=True)
+    due_date            = DateTimeField(verbose_name="Срок сдачи", null=True, blank=True)
+    submittable         = BooleanField(verbose_name="Отправка решений разрешена", default=True)
 
-    link: URLField[Any, Any]                = URLField(verbose_name="Ссылка", null=True, blank=True)
-    embed: BooleanField[Any, Any]               = BooleanField(default=True, verbose_name="Встроена")
+    link                = URLField(verbose_name="Ссылка", null=True, blank=True)
+    embed               = BooleanField(default=True, verbose_name="Встроена")
 
-    linked_activity: ForeignKey[Any, Any]     = ForeignKey("Activity", null=True, blank=True, on_delete=SET_NULL)
+    linked_activity     = ForeignKey("Activity", null=True, blank=True, on_delete=SET_NULL)
 
     # class Meta:
     #     constraints = [
@@ -67,7 +67,7 @@ class Activity(CommonObject):
         E = 'E', "Экзамен"
         F = 'F', "Итоговая"
 
-    final_type: CharField[Any, Any] = CharField(
+    final_type = CharField(
         choices=FinalType.choices,
         default=FinalType.F,
         max_length=2,

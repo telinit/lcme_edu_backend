@@ -8,10 +8,10 @@ from ..user.models import User
 
 
 class File(CommonObject):
-    name: CharField[Any, Any]        = CharField(max_length=255, verbose_name="Название")
-    hash: CharField[Any, Any]        = CharField(max_length = 64, blank = False, unique=True, verbose_name = "Хеш файла")
-    size: IntegerField[Any, Any]        = IntegerField(verbose_name="Размер")
-    mime_type: CharField[Any, Any]   = CharField(max_length=255, verbose_name="MIME-тип")
+    name        = CharField(max_length=255, verbose_name="Название")
+    hash        = CharField(max_length = 64, blank = False, unique=True, verbose_name = "Хеш файла")
+    size        = IntegerField(verbose_name="Размер")
+    mime_type   = CharField(max_length=255, verbose_name="MIME-тип")
 
     def __str__(self):
         return f"{self.name} ({self.mime_type}, {self.size})"
