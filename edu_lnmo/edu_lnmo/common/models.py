@@ -5,7 +5,6 @@ from django.contrib.auth.models import Group
 from django.db.models import *
 from django.db.models import UUIDField, DateTimeField, BooleanField, ForeignKey, CharField
 from django.db.models.manager import BaseManager
-from django.db.models.query import _QuerySet
 
 
 class CommonObject(Model):
