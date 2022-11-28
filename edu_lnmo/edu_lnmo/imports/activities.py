@@ -45,7 +45,7 @@ class ActivitiesDataImporter(CSVDataImporter):
                 rec = dict()
                 all_empty = True
                 for k in old_rec:
-                    val_list_all_empty  =   isinstance(old_rec[k], list) and all(map(lambda x : not x, old_rec[k]))
+                    val_list_all_empty  =   isinstance(old_rec[k], list) and all(map(lambda x: not x, old_rec[k]))
                     val_empty           =   str(old_rec[k]).strip() == ""
                     all_empty           &=  val_list_all_empty or val_empty
 

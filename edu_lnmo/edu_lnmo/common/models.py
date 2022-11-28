@@ -13,9 +13,9 @@ class CommonObject(Model):
         verbose_name = "Объект"
         verbose_name_plural = "Объекты"
 
-    id          : UUIDField[Any, Any]       = UUIDField(primary_key=True, null=False, default=uuid.uuid4)
-    created_at  : DateTimeField[Any, Any]   = DateTimeField(auto_now_add=True)
-    updated_at  : DateTimeField[Any, Any]   = DateTimeField(auto_now=True)
+    id: UUIDField[Any, Any]       = UUIDField(primary_key=True, null=False, default=uuid.uuid4)
+    created_at: DateTimeField[Any, Any]   = DateTimeField(auto_now_add=True)
+    updated_at: DateTimeField[Any, Any]   = DateTimeField(auto_now=True)
 
     objects: BaseManager[Any]
 
