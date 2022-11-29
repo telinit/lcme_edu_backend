@@ -24,6 +24,7 @@ from .models import User, MultiToken
 from ..course.models import CourseEnrollment
 from ..education.api import EducationShallowSerializer, EducationDeepSerializer, EducationSpecializationSerializer
 from ..education.models import Education, EducationSpecialization
+from ..imports.students import StudentsDataImporter, StudentsImportResult
 from ..settings import EMAIL_JWT_SECRET
 from ..util.email import EmailManager
 from ..util.rest import request_user_is_staff, EduModelViewSet, EduModelSerializer
@@ -125,6 +126,12 @@ class TokenSerializer(serializers.Serializer):
         fields = "__all__"
         depth = 1
 
+class ImportStudentsCSVRequest(serializers.Serializer):
+    data = serializers.CharField()
+
+class ImportStudentsCSVResult(serializers.Serializer):
+    data = serializers.ListField(child=serializers.ListField(child=serializers.CharField()))
+
 
 class UserViewSet(EduModelViewSet):
     class UserPermissions(BasePermission):
@@ -132,9 +139,9 @@ class UserViewSet(EduModelViewSet):
         def has_permission(self, request: Request, view: "UserViewSet"):
             if view.action == "impersonate":
                 return request.user and request.user.is_superuser
-            if view.action in ["login", "reset_password_request", "reset_password_complete", "set_password", "set_email"]:
+            elif view.action in ["login", "reset_password_request", "reset_password_complete", "set_password", "set_email"]:
                 return True
-            elif view.action == "create":
+            elif view.action in ["create", "import_students_csv"]:
                 return request_user_is_staff(request)
             elif view.action in ["list", "logout", "self", "get_deep"]:
                 return request.user and request.user.is_authenticated
@@ -324,3 +331,19 @@ class UserViewSet(EduModelViewSet):
             return Response()
         else:
             return Response(status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @swagger_auto_schema(request_body=ImportStudentsCSVRequest,
+                         responses={200: ImportStudentsCSVResult})
+    @action(methods=['POST'], detail=False)
+    def import_students_csv(self, request: Request):
+        if not request_user_is_staff(request):
+            return Response(status=HTTP_403_FORBIDDEN)
+
+        ser = ImportStudentsCSVRequest(data=request.data)
+
+        if not ser.is_valid():
+            return Response('Bad data', status=HTTP_400_BAD_REQUEST)
+
+        results: StudentsImportResult = StudentsDataImporter().do_import(ser.validated_data["data"])
+
+        return Response(data={"data": results.report_rows})
