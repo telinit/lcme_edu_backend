@@ -238,7 +238,7 @@ class UserViewSet(EduModelViewSet):
                          responses={200: 'The email address is updated'})
     @action(methods=['POST'], detail=True)
     def set_email(self, request: Request, pk):
-        if not request_user_is_staff(request) and pk != request.user.id:
+        if not request_user_is_staff(request) and str(pk) != str(request.user.id):
             return Response(status=HTTP_403_FORBIDDEN)
 
         user = User.objects.filter(id=pk)
