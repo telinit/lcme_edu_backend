@@ -102,13 +102,13 @@ class CourseEnrollment(CommonObject):
 
     @classmethod
     def get_courses_of_student(cls, user: User | QuerySet) -> QuerySet:
-        if isinstance(user, type(User)):
+        if isinstance(user, User):
             return Course.objects.filter(
                 enrollments__role=cls.EnrollmentRole.student,
                 enrollments__finished_on__isnull=True,
                 enrollments__person=user
             )
-        elif isinstance(user, type(QuerySet)):
+        elif isinstance(user, QuerySet):
             return Course.objects.filter(
                 enrollments__role=cls.EnrollmentRole.student,
                 enrollments__finished_on__isnull=True,
@@ -120,12 +120,12 @@ class CourseEnrollment(CommonObject):
 
     @staticmethod
     def get_courses_of_user(user: User | QuerySet) -> QuerySet:
-        if isinstance(user, type(User)):
+        if isinstance(user, User):
             return Course.objects.filter(
                 enrollments__finished_on__isnull=True,
                 enrollments__person=user
             )
-        elif isinstance(user, type(QuerySet)):
+        elif isinstance(user, QuerySet):
             return Course.objects.filter(
                 enrollments__finished_on__isnull=True,
                 enrollments__person__in=user
