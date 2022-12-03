@@ -19,6 +19,11 @@ class CommonObject(Model):
 
     objects: BaseManager[Any]
 
+    indexes = [
+        Index(fields=['created_at']),
+        Index(fields=['updated_at'])
+    ]
+
 
 class Permission(Model):
     invert_condition    = BooleanField(verbose_name="Инвертировать условие", default=False)
@@ -45,6 +50,16 @@ class Permission(Model):
         verbose_name = "Право доступа"
         verbose_name_plural = "Права доступа"
 
+        indexes = [
+            Index(fields=['invert_condition']),
+            Index(fields=['do_allow']),
+            Index(fields=['user']),
+            Index(fields=['group']),
+            Index(fields=['for_class']),
+            Index(fields=['spec']),
+            Index(fields=['role'])
+        ]
+
 
 class Organization(CommonObject):
     name       = CharField(verbose_name="Название", max_length=255)
@@ -56,6 +71,11 @@ class Organization(CommonObject):
     class Meta:
         verbose_name = "Организация"
         verbose_name_plural = "Организации"
+
+        indexes = [
+            Index(fields=['name']),
+            Index(fields=['name_short'])
+        ]
 
 
 class Department(CommonObject):
@@ -69,3 +89,8 @@ class Department(CommonObject):
     class Meta:
         verbose_name = "Отдел"
         verbose_name_plural = "Отделы"
+
+        indexes = [
+            Index(fields=['organization']),
+            Index(fields=['name'])
+        ]

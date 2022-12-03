@@ -7,7 +7,7 @@ from .models import UnreadObject
 @admin.register(UnreadObject)
 class UnreadObjectAdmin(VersionAdmin):
     autocomplete_fields = ['user']
-    list_display = ['type', 'user', 'created']
+    list_display = ['type', 'user']
     list_filter = ('type', 'user')
     search_fields = [
         'obj',

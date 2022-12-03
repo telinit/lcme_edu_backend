@@ -82,3 +82,21 @@ class Activity(CommonObject):
         verbose_name = "Активность"
         verbose_name_plural = "Активности"
 
+        indexes = [
+            Index(fields=['content_type']),
+            Index(fields=['course']),
+            Index(fields=['title']),
+            Index(fields=['keywords']),
+            Index(fields=['lesson_type']),
+            Index(fields=['is_hidden']),
+            Index(fields=['hours']),
+            Index(fields=['fgos_complient']),
+            Index(fields=['order']),
+            Index(fields=['date']),
+            Index(fields=['group']),
+            Index(fields=['scientific_topic']),
+            Index(fields=['due_date']),
+            Index(fields=['submittable']),
+            Index(fields=['embed'])
+        ]
+

@@ -19,3 +19,10 @@ class File(CommonObject):
     class Meta:
         verbose_name = "Файл"
         verbose_name_plural = "Файлы"
+
+        indexes = [
+            Index(fields=['name']),
+            Index(fields=['hash']),
+            Index(fields=['size']),
+            Index(fields=['mime_type'])
+        ]

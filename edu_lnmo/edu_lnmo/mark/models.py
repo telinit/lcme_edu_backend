@@ -20,3 +20,10 @@ class Mark(CommonObject):
     class Meta:
         verbose_name = "Оценка"
         verbose_name_plural = "Оценки"
+
+        indexes = [
+            Index(fields=['author']),
+            Index(fields=['student']),
+            Index(fields=['value']),
+            Index(fields=['activity'])
+        ]

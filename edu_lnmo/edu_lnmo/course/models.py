@@ -45,6 +45,16 @@ class Course(CommonObject):
         verbose_name = "Курс"
         verbose_name_plural = "Курсы"
 
+        indexes = [
+            Index(fields=['type']),
+            Index(fields=['title']),
+            Index(fields=['for_class']),
+            Index(fields=['for_specialization']),
+            Index(fields=['for_group']),
+            Index(fields=['logo']),
+            Index(fields=['cover'])
+        ]
+
     @property
     def teachers(self) -> QuerySet:
         return CourseEnrollment.objects.filter(
@@ -91,6 +101,13 @@ class CourseEnrollment(CommonObject):
     class Meta:
         verbose_name = "Запись на курс"
         verbose_name_plural = "Записи на курсы"
+
+        indexes = [
+            Index(fields=['person']),
+            Index(fields=['course']),
+            Index(fields=['role']),
+            Index(fields=['finished_on'])
+        ]
 
     @classmethod
     def get_courses_of_teacher(cls, user) -> QuerySet:

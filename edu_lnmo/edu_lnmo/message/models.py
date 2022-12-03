@@ -28,6 +28,15 @@ class Message(CommonObject):
         verbose_name = "Сообщение"
         verbose_name_plural = "Сообщения"
 
+        indexes = [
+            Index(fields=['type']),
+            Index(fields=['thread']),
+            Index(fields=['sender']),
+            Index(fields=['receiver']),
+            Index(fields=['manual_category']),
+            Index(fields=['manual_audience'])
+        ]
+
 class MessageThread(CommonObject):
     class ThreadType(TextChoices):
         GRP = 'GRP', "Группа"
@@ -57,6 +66,13 @@ class MessageThread(CommonObject):
         verbose_name = "Тема сообщений"
         verbose_name_plural = "Темы сообщений"
 
+        indexes = [
+            Index(fields=['type']),
+            Index(fields=['topic']),
+            Index(fields=['support_status']),
+            Index(fields=['group'])
+        ]
+
 class ThreadGroup(CommonObject):
     name = CharField(verbose_name="Название", max_length=255, blank=False, null=False)
 
@@ -65,3 +81,8 @@ class ThreadGroup(CommonObject):
     class Meta:
         verbose_name = "Группа тем сообщений"
         verbose_name_plural = "Группы тем сообщений"
+
+        indexes = [
+            Index(fields=['name']),
+            Index(fields=['parent'])
+        ]

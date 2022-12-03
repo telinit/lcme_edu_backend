@@ -21,6 +21,11 @@ class EducationSpecialization(CommonObject):
         verbose_name = "Направление обучения"
         verbose_name_plural = "Направления обучения"
 
+        indexes = [
+            Index(fields=['name']),
+            Index(fields=['department'])
+        ]
+
 
 class Education(CommonObject):
     student         = ForeignKey(User, verbose_name="Учащийся", related_name="education", on_delete=CASCADE)
@@ -42,6 +47,15 @@ class Education(CommonObject):
     class Meta:
         verbose_name = "Обучение"
         verbose_name_plural = "Обучения"
+
+        indexes = [
+            Index(fields=['student']),
+            Index(fields=['started']),
+            Index(fields=['finished']),
+            Index(fields=['starting_class']),
+            Index(fields=['finishing_class']),
+            Index(fields=['specialization'])
+        ]
 
     def __str__(self):
         return f"{self.student}: {self.started} ({self.starting_class}) - {self.finished} ({self.finishing_class})"

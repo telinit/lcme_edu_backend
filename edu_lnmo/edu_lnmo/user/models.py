@@ -67,3 +67,9 @@ class MultiToken(Token):
     class Meta:
         verbose_name = "Токен"
         verbose_name_plural = "Токены"
+
+        indexes = [
+            Index(fields=['user']),
+            Index(fields=['key']),
+            Index(fields=['created'])
+        ]

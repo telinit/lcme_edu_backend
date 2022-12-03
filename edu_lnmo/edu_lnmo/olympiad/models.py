@@ -22,6 +22,13 @@ class Olympiad(CommonObject):
         verbose_name = "Олимпиада"
         verbose_name_plural = "Олимпиады"
 
+        indexes = [
+            Index(fields=['name']),
+            Index(fields=['category']),
+            Index(fields=['location']),
+            Index(fields=['department'])
+        ]
+
 class OlympiadParticipation(CommonObject):
     olympiad = ForeignKey(Olympiad, verbose_name="Олимпиада", on_delete=CASCADE)
     person = ForeignKey(User, verbose_name="Участник", on_delete=CASCADE)
@@ -36,3 +43,11 @@ class OlympiadParticipation(CommonObject):
     class Meta:
         verbose_name = "Участие в олимпиаде"
         verbose_name_plural = "Участия в олимпиадах"
+
+        indexes = [
+            Index(fields=['olympiad']),
+            Index(fields=['person']),
+            Index(fields=['date']),
+            Index(fields=['award']),
+            Index(fields=['team_member'])
+        ]
