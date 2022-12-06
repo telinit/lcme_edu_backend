@@ -111,5 +111,5 @@ class MarkViewSet(EduModelViewSet):
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [MarkPermissions]
 
-    filterset_fields = ["author", "student", "value", "activity"]
+    filterset_fields = ["author", "student", "value", "activity", "activity__course"]
     search_fields = ["comment"]
