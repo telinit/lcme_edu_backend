@@ -1,6 +1,7 @@
 import uuid
 from typing import Any
 
+from django.core.validators import MinValueValidator
 from django.db.models import *
 from django.db.models import CharField, ForeignKey, TextField, BooleanField, IntegerField, DateField, ManyToManyField, \
     DateTimeField, URLField
@@ -29,12 +30,12 @@ class Activity(CommonObject):
     lesson_type         = CharField(max_length=255, verbose_name="Тип занятия", blank=True)
 
     is_hidden           = BooleanField(verbose_name="Скрыта", default=False)
-    marks_limit         = IntegerField(verbose_name="Лимит оценок", default=1)
-    hours               = IntegerField(verbose_name="Количество часов", default=1)
+    marks_limit         = IntegerField(verbose_name="Лимит оценок", default=1, validators=[MinValueValidator(0)])
+    hours               = IntegerField(verbose_name="Количество часов", default=1, validators=[MinValueValidator(0)])
 
     fgos_complient      = BooleanField(verbose_name="Соответствие ФГОС", default=False)
 
-    order               = IntegerField(verbose_name="Номер в списке курса")
+    order               = IntegerField(verbose_name="Номер в списке курса", validators=[MinValueValidator(1)])
     date                = DateField(verbose_name="Дата проведения", blank=True, null=True)
 
     group               = CharField(max_length=255, verbose_name="Группа", blank=True, null=True)

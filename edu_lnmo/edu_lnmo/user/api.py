@@ -139,7 +139,9 @@ class UserViewSet(EduModelViewSet):
         def has_permission(self, request: Request, view: "UserViewSet"):
             if view.action == "impersonate":
                 return request.user and request.user.is_superuser
-            elif view.action in ["login", "reset_password_request", "reset_password_complete", "set_password", "set_email"]:
+            elif view.action in ["set_password", "set_email"]:
+                return str(obj.id) == str(request.user.id) or request_user_is_staff(request)
+            elif view.action in ["retrieve", "get-deep", "login", "reset_password_request", "reset_password_complete"]:
                 return True
             elif view.action in ["create", "import_students_csv"]:
                 return request_user_is_staff(request)
@@ -149,8 +151,10 @@ class UserViewSet(EduModelViewSet):
                 return False
 
         def has_object_permission(self, request: Request, view: "UserViewSet", obj):
-            if view.action in ["retrieve", "get-deep", "set_password", "set_email"]:
+            if view.action in ["retrieve", "get-deep"]:
                 return True
+            elif view.action in ["set_password", "set_email"]:
+                return str(obj.id) == str(request.user.id) or request_user_is_staff(request)
             elif view.action in ["update", "partial_update", "destroy"]:
                 return request_user_is_staff(request)
             else:
