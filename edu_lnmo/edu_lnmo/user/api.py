@@ -17,7 +17,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT, HTTP_404_NOT_FOUND, \
-    HTTP_406_NOT_ACCEPTABLE, HTTP_500_INTERNAL_SERVER_ERROR
+    HTTP_406_NOT_ACCEPTABLE, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_410_GONE, HTTP_401_UNAUTHORIZED
 
 from .auth import MultiTokenAuthentication
 from .models import User, MultiToken
@@ -140,7 +140,7 @@ class UserViewSet(EduModelViewSet):
             if view.action == "impersonate":
                 return request.user and request.user.is_superuser
             elif view.action in ["set_password", "set_email"]:
-                return str(obj.id) == str(request.user.id) or request_user_is_staff(request)
+                return True  # Permissions are checked inside those functions
             elif view.action in ["retrieve", "get-deep", "login", "reset_password_request", "reset_password_complete"]:
                 return True
             elif view.action in ["create", "import_students_csv"]:
@@ -295,23 +295,32 @@ class UserViewSet(EduModelViewSet):
                          responses={200: 'Request was successful'})
     @action(methods=['POST'], detail=False)
     def reset_password_complete(self, request: Request):
-        token = str(request.data["token"]).strip()
+        ser = ResetPasswordCompleteSerializer(data=request.data)
+
+        if not ser.is_valid():
+            return Response('', status=HTTP_400_BAD_REQUEST)
+
+        token = str(ser.validated_data["token"]).strip()
 
         jwt = PyJWT()
-        data = jwt.decode(token, EMAIL_JWT_SECRET, ['HS256'])
-        if data:
+        try:
+            data = jwt.decode(token, EMAIL_JWT_SECRET, ['HS256'])
+        except:
+            return Response('Bad token', status=HTTP_401_UNAUTHORIZED)
+
+        if data and 'uid' in data:
             user = User.objects.filter(id=data['uid'])
 
             if user:
                 user = user[0]
                 if email_ok(user.email):
                     EmailManager.send_notification_on_password_change(
-                        request.user.first_name,
-                        request.user.email,
+                        user.first_name,
+                        user.email,
                         is_reset=True
                     )
 
-                user.set_password()
+                user.set_password(ser.validated_data["password"])
                 user.save()
                 return Response()
 

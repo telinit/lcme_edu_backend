@@ -1,3 +1,5 @@
+import datetime
+
 from django.core.mail import send_mail
 import urllib.parse
 
@@ -19,7 +21,7 @@ class EmailManager(object):
     @staticmethod
     def send_password_reset(uid, user_first_name, recipient):
         jwt = PyJWT()
-        token = jwt.encode({"uid": str(uid)}, EMAIL_JWT_SECRET, 'HS256')
+        token = jwt.encode({"uid": str(uid), "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=5)}, EMAIL_JWT_SECRET, 'HS256')
         link = f"https://edu.lnmo.ru/login/password_reset?token={token}"
 
         msg = f"""Здравствуйте, {user_first_name}.
