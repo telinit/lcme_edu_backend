@@ -32,6 +32,7 @@ class Activity(CommonObject):
     is_hidden           = BooleanField(verbose_name="Скрыта", default=False)
     marks_limit         = IntegerField(verbose_name="Лимит оценок", default=1, validators=[MinValueValidator(0)])
     hours               = IntegerField(verbose_name="Количество часов", default=1, validators=[MinValueValidator(0)])
+    weight              = FloatField(verbose_name="Вес оценок", default=1, validators=[MinValueValidator(0)])
 
     fgos_complient      = BooleanField(verbose_name="Соответствие ФГОС", default=False)
 
