@@ -41,26 +41,10 @@ class CourseEnrollmentWriteSerializer(EduModelWriteSerializer):
         depth = 0
 
 
-class CourseDeepSerializer(EduModelReadSerializer):
-    for_specialization = EducationSpecializationSerializer(allow_null=True)
-    logo = FileSerializer(allow_null=True)
-    cover = FileSerializer(allow_null=True)
-
-    activities = ActivitySerializer(many=True) # SerializerMethodField()
-    enrollments = CourseEnrollmentReadSerializer(many=True)
-
-
+class CourseSerializer(EduModelWriteSerializer):
     class Meta(EduModelSerializer.Meta):
         model = Course
         fields = '__all__'
-        depth = 1
-
-
-class CourseShallowSerializer(EduModelWriteSerializer):
-    class Meta(EduModelSerializer.Meta):
-        model = Course
-        fields = '__all__'
-        depth = 0
 
 
 class BulkSetActivitiesSerializer(Serializer):
@@ -87,24 +71,6 @@ class CourseViewSet(EduModelViewSet):
                        (request_user_is_staff(request) or obj.teachers.filter(id=request.user.id).exists())
             else:
                 return request_user_is_authenticated(request)
-
-    @swagger_auto_schema(responses={200: CourseDeepSerializer()})
-    @action(methods=['GET'], detail=True, url_path='deep')
-    def get_deep(self, request: Request, pk, *args, **kwargs):
-        obj = self.get_queryset().filter(id=pk)
-        if not obj:
-            return Response(status=HTTP_404_NOT_FOUND)
-        else:
-            obj = obj.get()
-            ser = CourseDeepSerializer(obj)
-            return Response(ser.data)
-
-    @swagger_auto_schema(responses={200: CourseDeepSerializer()})
-    @action(methods=['GET'], detail=False, url_path='deep')
-    def list_deep(self, request: Request, *args, **kwargs):
-        obj = self.get_queryset()
-        ser = CourseDeepSerializer(obj, many=True)
-        return Response(ser.data)
 
     @swagger_auto_schema(request_body=BulkSetActivitiesSerializer,
                          responses={200: 'OK', HTTP_400_BAD_REQUEST: ErrorMessageSerializer})
@@ -187,7 +153,7 @@ class CourseViewSet(EduModelViewSet):
             users = User.objects.filter(id=u.id) | u.children.all()
             return CourseEnrollment.get_courses_of_user(users).distinct()
 
-    serializer_class = CourseShallowSerializer
+    serializer_class = CourseSerializer
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [CoursePermissions]
     filterset_fields = ["for_specialization", "for_group", "for_class", "enrollments__person", "enrollments__role"]
