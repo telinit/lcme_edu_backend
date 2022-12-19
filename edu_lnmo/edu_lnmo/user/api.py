@@ -27,7 +27,7 @@ from ..education.models import Education, EducationSpecialization
 from ..imports.students import StudentsDataImporter, StudentsImportResult
 from ..settings import EMAIL_JWT_SECRET
 from ..util.email import EmailManager
-from ..util.rest import request_user_is_staff, EduModelViewSet, EduModelSerializer
+from ..util.rest import request_user_is_staff, EduModelViewSet, EduModelSerializer, request_user_is_admin
 from ..util.string import email_ok
 
 
@@ -334,6 +334,9 @@ class UserViewSet(EduModelViewSet):
     @swagger_auto_schema(responses={200: "OK"})
     @action(methods=['GET'], detail=True)
     def impersonate(self, request: Request, pk):
+        if not request_user_is_admin(request):
+            return Response(status=HTTP_403_FORBIDDEN)
+
         if not User.objects.filter(id=pk):
             return Response('Not found', status=HTTP_404_NOT_FOUND)
 

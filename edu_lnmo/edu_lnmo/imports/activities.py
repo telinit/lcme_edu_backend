@@ -67,7 +67,8 @@ class ActivitiesDataImporter(CSVDataImporter):
                     order = order,
                     date = self.parse_date(rec["Дата"].strip()),
                     group = rec["Раздел"].strip(),
-                    scientific_topic = rec["Раздел научной дисциплины"].strip()
+                    scientific_topic = rec["Раздел научной дисциплины"].strip(),
+                    body = rec["Материалы урока"].strip()
                 )
                 res.objects += [act]
                 res.report_rows += [[str(order), "Тема", rec["Тема"].strip()]]
@@ -96,26 +97,6 @@ class ActivitiesDataImporter(CSVDataImporter):
                     res.report_rows += [[str(order), "Домашнее задание", rec["Тема"].strip()]]
                     order += 1
 
-                refs = rec["Материалы урока"].strip()
-                if refs != "":
-                    act_refs, _ = Activity.objects.get_or_create(
-                        content_type=Activity.ActivityContentType.TXT,
-                        course=course,
-                        title=f"Материалы урока",
-                        keywords=rec["Ключевое слово"].strip(),
-                        is_hidden=False,
-                        fgos_complient=str(rec["Фгос"]).strip().lower() == "да",
-                        order=order,
-                        date=self.parse_date(rec["Дата"].strip()),
-                        group=rec["Раздел"].strip(),
-                        scientific_topic=rec["Раздел научной дисциплины"].strip(),
-                        body=refs,
-                        linked_activity=act,
-                        marks_limit=0
-                    )
-                    res.objects += [act_refs]
-                    res.report_rows += [[str(order), "Материалы урока", rec["Тема"].strip()]]
-                    order += 1
 
                 i += 1
             except Exception as e:
