@@ -68,12 +68,13 @@ make-backup-production:
   tags:
     - bare
   script:
-      - mkdir -p /docker/edu_lnmo_back/backups/db
+      - export DIR=$(date +%Y-%m)
+      - mkdir -p /docker/edu_lnmo_back/backups/db/$DIR
       - echo 127.0.0.1:5432:$POSTGRES_DB:$POSTGRES_USER:$POSTGRES_PASSWORD > /docker/edu_lnmo_back/backups/db/.pgpass
       - docker cp /docker/edu_lnmo_back/backups/db/.pgpass edu-lnmo-back_postgres_1:/.pgpass
       - rm /docker/edu_lnmo_back/backups/db/.pgpass
       - docker exec edu-lnmo-back_postgres_1 chmod 600 /.pgpass
-      - docker exec edu-lnmo-back_postgres_1 env PGPASSFILE=/.pgpass pg_dump -w -U "$POSTGRES_USER" | gzip > /docker/edu_lnmo_back/backups/db/$(date +%Y-%m-%d_%H-%M-%S).sql.gz
+      - docker exec edu-lnmo-back_postgres_1 env PGPASSFILE=/.pgpass pg_dump -w -U "$POSTGRES_USER" | gzip > /docker/edu_lnmo_back/backups/db/$DIR/$(date -Ins).sql.gz
 
 stop-deploy-2-production:
   stage: deploy
