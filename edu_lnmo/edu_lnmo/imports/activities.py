@@ -97,7 +97,6 @@ class ActivitiesDataImporter(CSVDataImporter):
                     res.report_rows += [[str(order), "Домашнее задание", rec["Тема"].strip()]]
                     order += 1
 
-
                 i += 1
             except Exception as e:
                 raise Exception(f"Failed to import a record {i} ({old_rec}): {e}")

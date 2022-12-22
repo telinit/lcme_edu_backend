@@ -6,13 +6,13 @@ from .models import *
 
 @admin.register(Olympiad)
 class OlympiadAdmin(VersionAdmin):
-    autocomplete_fields = ['department']
-    list_display = ['name', 'category', 'location', 'department']
-    list_filter = ('name', 'category', 'location', 'department')
+    autocomplete_fields = ['department', 'logo']
+    list_display = ['name', 'category', 'organization', 'department']
+    list_filter = ('name', 'category', 'organization', 'department')
     search_fields = [
         'name',
         'category',
-        'location',
+        'organization',
         'department',
         'website'
     ]
