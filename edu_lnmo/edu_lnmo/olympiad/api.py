@@ -7,7 +7,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 
-from .models import Activity, Olympiad, OlympiadParticipation
+from .models import Olympiad, OlympiadParticipation
 from ..course.models import Course, CourseEnrollment
 from ..user.auth import MultiTokenAuthentication
 from ..user.models import User
@@ -43,13 +43,13 @@ class OlympiadViewSet(EduModelViewSet):
     serializer_class = OlympiadSerializer
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [OlympiadPermissions]
-    filterset_fields = ['name', 'category', 'website', 'location', 'department__organization__name', 'department__name']
-    search_fields = ['name', 'category', 'website', 'location', 'department__organization__name', 'department__name']
+    filterset_fields = ['name', 'category', 'website', 'organization', 'department__organization__name', 'department__name']
+    search_fields = ['name', 'category', 'website', 'organization', 'department__organization__name', 'department__name']
 
 
 class OlympiadParticipationSerializer(EduModelSerializer):
     class Meta(EduModelSerializer.Meta):
-        model = Olympiad
+        model = OlympiadParticipation
         fields = '__all__'
 
 
@@ -76,5 +76,5 @@ class OlympiadParticipationViewSet(EduModelViewSet):
     serializer_class = OlympiadParticipationSerializer
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [OlympiadParticipationPermissions]
-    filterset_fields = ['date', 'olympiad__id', 'person__id', 'date', 'award', 'team_member']
-    search_fields = ['date', 'award']
+    filterset_fields = ['date', 'olympiad__id', 'person__id', 'date', 'award', 'location', 'team_member']
+    search_fields = ['date', 'award', 'location']

@@ -19,7 +19,9 @@ from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from rest_framework.schemas.views import SchemaView
 
+from . import settings
 from .api import api
 
 schema_view = get_schema_view(
@@ -31,6 +33,7 @@ schema_view = get_schema_view(
       contact=openapi.Contact(email="sysadmin@lnmo.ru"),
       license=openapi.License(name="BSD License"),
    ),
+   url="http://edu.lcme/api" if settings.DEBUG else "https://edu.lnmo.ru/api",
    public=True,
    permission_classes=[permissions.AllowAny],
 )

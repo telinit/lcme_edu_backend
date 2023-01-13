@@ -33,13 +33,13 @@ class Olympiad(CommonObject):
 
 
 class OlympiadParticipation(CommonObject):
-    olympiad = ForeignKey(Olympiad, verbose_name="Олимпиада", on_delete=CASCADE)
-    person = ForeignKey(User, verbose_name="Участник", on_delete=CASCADE)
+    olympiad = ForeignKey(Olympiad, verbose_name="Олимпиада", related_name="participations", on_delete=CASCADE)
+    person = ForeignKey(User, verbose_name="Участник", related_name="olympiads", on_delete=CASCADE)
 
     date = DateTimeField(verbose_name="Дата участия", null=True, blank=True )
     award = CharField(verbose_name="Награда", max_length=512, null=True, blank=True)
     team_member = BooleanField(verbose_name="В составе команды", default=False)
-    stage = CharField("Этап олимпиады", max_length=255, null=True)
+    stage = CharField("Этап олимпиады", max_length=255, null=True, blank=True)
     location = CharField(verbose_name="Место проведения", max_length=512, null=True, blank=True)
 
     def __str__(self):

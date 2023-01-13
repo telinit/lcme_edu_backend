@@ -25,6 +25,7 @@ from ..course.models import CourseEnrollment
 from ..education.api import EducationShallowSerializer, EducationDeepSerializer, EducationSpecializationSerializer
 from ..education.models import Education, EducationSpecialization
 from ..imports.students import StudentsDataImporter, StudentsImportResult
+from ..olympiad.api import OlympiadSerializer, OlympiadParticipationSerializer
 from ..settings import EMAIL_JWT_SECRET
 from ..util.email import EmailManager
 from ..util.rest import request_user_is_staff, EduModelViewSet, EduModelSerializer, request_user_is_admin
