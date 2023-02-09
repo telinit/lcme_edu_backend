@@ -1,6 +1,7 @@
 from rest_framework import routers
 
 from .activity.api import ActivityViewSet
+from .captcha.api import CaptchaViewSet
 from .common.api import DepartmentViewSet, OrganizationViewSet
 from .course.api import CourseViewSet, CourseEnrollmentViewSet
 from .education.api import EducationSpecializationViewSet, EducationViewSet
@@ -35,3 +36,4 @@ api.register(r'message', MessageViewSet, basename="Message")
 api.register(r'unread', UnreadObjectViewSet, basename="UnreadObject")
 api.register(r'user', UserViewSet, basename="User")
 api.register(r'stats', StatsViewSet, basename="Stats")
+api.register(r'captcha', CaptchaViewSet, basename="CaptchaViewSet")

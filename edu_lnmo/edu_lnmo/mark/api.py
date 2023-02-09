@@ -268,7 +268,6 @@ class MarkViewSet(EduModelViewSet):
                 m = student.middle_name
                 fn = f"{s}/{c}/{l}_{f}_{m}.csv"
 
-                print(f"Putting {fn}")
                 zip.writestr(fn, out_buff.read())
                 out_buff, csv_out = init_csv()
 

@@ -33,8 +33,6 @@ class ActivitiesDataImporter(CSVDataImporter):
         r = DictReader(data.splitlines(), delimiter=sep)
         res = ActivitiesImportResult()
 
-        print(res.report_rows)
-
         course = Course.objects.get(id=course_id)
 
         order = 1 + (Activity.objects.filter(course=course).aggregate(Max('order'))['order__max'] or 0)
