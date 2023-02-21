@@ -221,4 +221,4 @@ class CourseEnrollmentViewSet(EduModelViewSet):
 
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [CourseEnrollmentPermissions]
-    filterset_fields = ['person', 'course', 'role', 'finished_on']
+    filterset_fields = dict((k, ['exact', 'isnull']) for k in ['person', 'course', 'role', 'finished_on'])
