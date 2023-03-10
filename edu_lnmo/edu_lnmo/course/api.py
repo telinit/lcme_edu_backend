@@ -99,6 +99,8 @@ class CourseViewSet(EduModelViewSet):
         with transaction.atomic():
             for act_raw in ser.validated_data['create']:
                 if act_raw['course'].id != course.id:
+                    EmailManager.send_manually_exception_email(request, Exception(
+                        "act_raw['course'].id != course.id"))
                     return Response(status=HTTP_400_BAD_REQUEST)
 
                 act_raw_safe = dict(act_raw)
@@ -116,6 +118,8 @@ class CourseViewSet(EduModelViewSet):
 
             for act_id, act_raw in ser.validated_data['update'].items():
                 if act_raw['course'].id != course.id:
+                    EmailManager.send_manually_exception_email(request, Exception(
+                        "act_raw['course'].id != course.id"))
                     return Response(status=HTTP_400_BAD_REQUEST)
 
                 act_raw_safe = dict(act_raw)
