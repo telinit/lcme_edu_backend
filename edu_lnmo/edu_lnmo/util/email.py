@@ -1,8 +1,12 @@
 import datetime
+import sys
+import traceback
 
+from django.core import mail
 from django.core.mail import send_mail
 import urllib.parse
 
+from django.views.debug import ExceptionReporter
 from jwt import PyJWT
 
 from ..settings import EMAIL_JWT_SECRET
@@ -13,10 +17,6 @@ class EmailManager(object):
     @staticmethod
     def make_email(body):
         pass
-
-
-
-
 
     @staticmethod
     def send_password_reset(uid, user_first_name, recipient):
@@ -77,3 +77,20 @@ class EmailManager(object):
 Если это были не вы, то рекомендуем как можно быстрее изменить ваш email и пароль в настройках вашего профиля."""
 
         send_mail("ЛНМО | Изменение почты", msg, "edu@lnmo.ru", [recipient], html_message=html_msg)
+
+    @staticmethod
+    def send_manually_exception_email(request, e: Exception):
+        try:
+            raise e
+        except Exception:
+            exc_info = sys.exc_info()
+            reporter = ExceptionReporter(request, is_email=True, *exc_info)
+            subject = e.message.replace('\n', '\\n').replace('\r', '\\r')[:989]
+            message = "%s\n\n%s" % (
+                '\n'.join(traceback.format_exception(*exc_info)),
+                reporter.get_traceback_text()
+            )
+            mail.mail_admins(
+                subject, message, fail_silently=True,
+                html_message=reporter.get_traceback_html()
+            )

@@ -22,6 +22,7 @@ from ..file.api import FileSerializer
 from ..user.api import UserShallowSerializer
 from ..user.auth import MultiTokenAuthentication
 from ..user.models import User
+from ..util.email import EmailManager
 from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_staff, request_user_is_authenticated, \
     EduModelReadSerializer, EduModelWriteSerializer
 
@@ -84,6 +85,7 @@ class CourseViewSet(EduModelViewSet):
         ser = BulkSetActivitiesSerializer(data=request.data)
 
         if not ser.is_valid():
+            EmailManager.send_manually_exception_email(request, Exception("BulkSetActivitiesSerializer failed to parse the payload"))
             return Response(
                 status=HTTP_400_BAD_REQUEST,
                 data={
