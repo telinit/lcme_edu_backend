@@ -79,13 +79,14 @@ class EmailManager(object):
         send_mail("ЛНМО | Изменение почты", msg, "edu@lnmo.ru", [recipient], html_message=html_msg)
 
     @staticmethod
-    def send_manually_exception_email(request, e: Exception):
+    def send_manually_exception_email(request, e: BaseException):
         try:
             raise e
-        except Exception:
+        except BaseException:
             exc_info = sys.exc_info()
             reporter = ExceptionReporter(request, is_email=True, *exc_info)
-            subject = e.message.replace('\n', '\\n').replace('\r', '\\r')[:989]
+
+            subject = str(e).replace('\n', '\\n').replace('\r', '\\r')[:989]
             message = "%s\n\n%s" % (
                 '\n'.join(traceback.format_exception(*exc_info)),
                 reporter.get_traceback_text()
