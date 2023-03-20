@@ -48,7 +48,7 @@ class MarkViewSet(EduModelViewSet):
 
         def has_permission(self, request: Request, view: "MarkViewSet"):
             if view.action == "export":
-                is_getting_self = lambda : \
+                is_getting_self = lambda: \
                     request and request.GET and \
                     request.user and request.user.id and \
                     str(request.GET.get("student")) == str(request.user.id)
@@ -63,8 +63,8 @@ class MarkViewSet(EduModelViewSet):
                 elif request_user_is_staff(request):
                     return True
                 elif "activity" in request.data:
-                    activity: QuerySet = Activity.objects\
-                        .select_related("course")\
+                    activity: QuerySet = Activity.objects \
+                        .select_related("course") \
                         .filter(id=UUID(request.data["activity"]))
                     student = User(id=UUID(request.data["student"]))
 
@@ -77,9 +77,9 @@ class MarkViewSet(EduModelViewSet):
                         return False
 
                     course = Course.objects.filter(id=activity.course.id)
-                    teachers = CourseEnrollment\
+                    teachers = CourseEnrollment \
                         .get_teachers_of_courses(course, id=request.user.id)
-                    students = CourseEnrollment\
+                    students = CourseEnrollment \
                         .get_students_of_courses(course, id=student.id)
 
                     if teachers.exists() and students.exists():
@@ -108,7 +108,7 @@ class MarkViewSet(EduModelViewSet):
         def has_object_permission(self, request: Request, view: "MarkViewSet", obj: Mark):
             if view.action in ["update", "partial_update", "destroy"]:
                 return request_user_is_staff(request) or \
-                       CourseEnrollment.get_teachers_of_courses( [obj.activity.course ]).filter(id=request.user.id).exists()
+                    CourseEnrollment.get_teachers_of_courses([obj.activity.course]).filter(id=request.user.id).exists()
             else:
                 return request_user_is_authenticated(request)
 
@@ -140,46 +140,56 @@ class MarkViewSet(EduModelViewSet):
     def export_csv_make_row(self, student, education, enrollment, csv_out):
         course = enrollment.course
 
-        marks = [
-            *Mark.objects
-                .filter(activity__course=course, student=student)
-                .order_by('activity__order')
-                .prefetch_related('activity')
-        ]
+        marks = Mark.objects\
+            .filter(activity__course=course, student=student)\
+            .order_by('activity__order')
 
-        fins: dict[str, tuple[int, int]] = {}
-        for i, m in enumerate(marks):
-            if m.activity.content_type == Activity.ActivityContentType.FIN:
-                ft = m.activity.final_type
-                if ft in fins:
-                    fins[ft] = (fins[ft][0], i)
-                else:
-                    fins[ft] = (i, i)
+        acts: list[Activity] = [*Activity.objects
+        .filter(course=course)
+        .order_by('order')]
+
+        act_marks_ix: dict[Activity, list[Mark]] = {}
+        for m in marks:
+            if m.activity in act_marks_ix:
+                act_marks_ix[m.activity].append(m)
+            else:
+                act_marks_ix[m.activity] = [m]
 
         mark_values = lambda ms: " ".join(map(lambda m: m.value, ms))
 
-        def segment_marks(start_fin_types: Iterable, end_fin_types: Iterable, include_start=False,
+        def find_latest_activity_by_types(types: Iterable[Activity.FinalType]) -> int:
+            res = -1
+
+            for i, act in enumerate(acts):
+                if act.final_type in types:
+                    res = i
+
+            return res
+
+        def collect_marks(activities: Iterable[Activity]) -> list[Mark]:
+            res = []
+            for act in activities:
+                if act in act_marks_ix:
+                    res += act_marks_ix[act]
+
+            return res
+
+        def segment_marks(start_fin_types: list[Activity.FinalType], end_fin_types: list[Activity.FinalType], include_start=False,
                           include_end=False) -> str:
-            get_fin = lambda ft: [*fins[ft]] if ft in fins else []
-
-            fin_start_ranges: list[list[int]] = [*map(get_fin, start_fin_types)]
-            ss: list[int] = sum(fin_start_ranges, []) if len(fin_start_ranges) > 0 else []
-            if len(ss) > 0:
-                start = max(ss) + 1 if not include_start else min(ss)
-            else:
+            if start_fin_types == []:
                 start = 0
-
-            fin_end_ranges: list[list[int]] = [*map(get_fin, end_fin_types)]
-            es: list[int] = sum(fin_end_ranges, []) if len(fin_end_ranges) > 0 else []
-            if len(es) > 0:
-                end = min(es) if not include_end else max(es) + 1
             else:
-                end = 0
+                start = find_latest_activity_by_types(start_fin_types) + (0 if include_start else 1)
 
-            if start > end:
-                return "Некорректно заданы границы периода в курсе"
+            if end_fin_types == []:
+                end = len(acts) - 1
             else:
-                return mark_values(marks[start:end])
+                end = find_latest_activity_by_types(end_fin_types) - (0 if include_end else 1)
+
+            if start < 0 or end < 0 or start > end:
+                return "Не найдено"
+            else:
+                return mark_values(collect_marks(acts[start:end+1]))
 
         data = {}
 
@@ -214,7 +224,7 @@ class MarkViewSet(EduModelViewSet):
 
         csv_out.writerow(data)
 
-    def export_csv(self, request: Request, archive_group_by_person = False):
+    def export_csv(self, request: Request, archive_group_by_person=False):
         try:
             students = User.objects.get(id=request.GET.get("student"))
         except:
@@ -251,9 +261,12 @@ class MarkViewSet(EduModelViewSet):
             zip = zipfile.ZipFile(file, mode="x")
 
         for student in students:
-            educations = Education.objects.filter(student=student).order_by('-started')[:1].prefetch_related('specialization')
+            educations = Education.objects.filter(student=student).order_by('-started')[:1].prefetch_related(
+                'specialization')
             education = educations[0] if educations else None
-            enrollments = CourseEnrollment.objects.filter(person=student, role=CourseEnrollment.EnrollmentRole.student).prefetch_related('course')
+            enrollments = CourseEnrollment.objects.filter(person=student,
+                                                          role=CourseEnrollment.EnrollmentRole.student).prefetch_related(
+                'course')
 
             for enrollment in enrollments:
                 self.export_csv_make_row(student, education, enrollment, csv_out)
