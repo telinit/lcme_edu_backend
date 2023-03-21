@@ -127,11 +127,10 @@ class CourseViewSet(EduModelViewSet):
                 if 'files' in act_raw_safe:
                     del act_raw_safe['files']
 
-                act = Activity.objects.filter(id=act_id) \
- \
-                        if 'files' in act_raw:
-                            for f in act_raw['files']:
-                                act.files.add(f)
+                act = Activity.objects.filter(id=act_id)
+                if 'files' in act_raw:
+                    for f in act_raw['files']:
+                        act.files.add(f)
 
                 act.update(**act_raw_safe)
                 dont_delete += [act_id]
@@ -199,7 +198,7 @@ class CourseEnrollmentViewSet(EduModelViewSet):
                     if not request_user_is_authenticated(request):
                         return False
 
-                    p = CourseEnrollmentReadSerializer(data=request.data)
+                    p = CourseEnrollmentWriteSerializer(data=request.data)
 
                     if not p.is_valid():
                         return False
