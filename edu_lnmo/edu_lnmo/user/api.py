@@ -45,10 +45,10 @@ class UserShallowSerializer(EduModelSerializer):
         if len(u.children.all()) > 0:
             res += ["parent"]
 
-        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.student, u.enrollments.all())]) > 0:
+        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.student, u.enrollments.filter(finished_on=None))]) > 0:
             res += ["student"]
 
-        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.teacher, u.enrollments.all())]) > 0:
+        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.teacher, u.enrollments.filter(finished_on=None))]) > 0:
             res += ["teacher"]
 
         if u.is_staff:
