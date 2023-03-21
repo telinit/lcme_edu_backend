@@ -14,8 +14,8 @@ class CommonObject(Model):
         verbose_name_plural = "Объекты"
 
     id = UUIDField(primary_key=True, null=False, default=uuid.uuid4)
-    created_at   = DateTimeField(auto_now_add=True)
-    updated_at   = DateTimeField(auto_now=True)
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
 
     objects: BaseManager[Any]
 
@@ -26,25 +26,25 @@ class CommonObject(Model):
 
 
 class Permission(Model):
-    invert_condition    = BooleanField(verbose_name="Инвертировать условие", default=False)
-    do_allow            = BooleanField(verbose_name="Разрешить доступ (или запретить)", default=False)
+    invert_condition = BooleanField(verbose_name="Инвертировать условие", default=False)
+    do_allow = BooleanField(verbose_name="Разрешить доступ (или запретить)", default=False)
 
-    user                  = ForeignKey(
+    user = ForeignKey(
         to="User", related_name="direct_permissions", verbose_name="Пользователь",
         blank=True, null=True,
         on_delete=CASCADE)
-    group                 = ForeignKey(
+    group = ForeignKey(
         to=Group, related_name="direct_permissions", verbose_name="Группа пользователей",
         blank=True, null=True,
         on_delete=CASCADE
     )
-    for_class              = CharField(verbose_name="Класс", max_length=255, blank=True, null=True)
-    spec                  = ForeignKey(
+    for_class = CharField(verbose_name="Класс", max_length=255, blank=True, null=True)
+    spec = ForeignKey(
         to="EducationSpecialization", related_name="direct_permissions", verbose_name="Направление обучения",
         blank=True, null=True,
         on_delete=CASCADE
     )
-    role                   = CharField(verbose_name="Роль", max_length=255, blank=True, null=True )
+    role = CharField(verbose_name="Роль", max_length=255, blank=True, null=True)
 
     class Meta:
         verbose_name = "Право доступа"
@@ -62,7 +62,7 @@ class Permission(Model):
 
 
 class Organization(CommonObject):
-    name       = CharField(verbose_name="Название", max_length=255)
+    name = CharField(verbose_name="Название", max_length=255)
     name_short = CharField(verbose_name="Короткое название", max_length=255, blank=True, null=True)
 
     def __str__(self) -> str:
@@ -79,9 +79,9 @@ class Organization(CommonObject):
 
 
 class Department(CommonObject):
-    organization  = ForeignKey(Organization, on_delete=CASCADE)
+    organization = ForeignKey(Organization, on_delete=CASCADE)
 
-    name           = CharField(verbose_name="Название", max_length=255)
+    name = CharField(verbose_name="Название", max_length=255)
 
     def __str__(self) -> str:
         return f"{self.organization}: {self.name}"

@@ -29,6 +29,7 @@ from ..util.rest import EduModelViewSet, EduModelSerializer, request_user_is_sta
 
 class CourseEnrollmentReadSerializer(EduModelReadSerializer):
     person = UserShallowSerializer()
+
     class Meta(EduModelSerializer.Meta):
         model = CourseEnrollment
         fields = '__all__'
@@ -49,7 +50,6 @@ class CourseSerializer(EduModelWriteSerializer):
 
 
 class BulkSetActivitiesSerializer(Serializer):
-
     # delete = ListField(child=UUIDField())
     create = ActivitySerializer(many=True)
     update = DictField(child=ActivitySerializer())
@@ -69,7 +69,7 @@ class CourseViewSet(EduModelViewSet):
                 return request_user_is_staff(request)
             elif view.action in ["bulk_set_activities"]:
                 return request_user_is_authenticated(request) and \
-                       (request_user_is_staff(request) or obj.teachers.filter(id=request.user.id).exists())
+                    (request_user_is_staff(request) or obj.teachers.filter(id=request.user.id).exists())
             else:
                 return request_user_is_authenticated(request)
 
@@ -85,7 +85,8 @@ class CourseViewSet(EduModelViewSet):
         ser = BulkSetActivitiesSerializer(data=request.data)
 
         if not ser.is_valid():
-            EmailManager.send_manually_exception_email(request, Exception("BulkSetActivitiesSerializer failed to parse the payload"))
+            EmailManager.send_manually_exception_email(request, Exception(
+                "BulkSetActivitiesSerializer failed to parse the payload"))
             return Response(
                 status=HTTP_400_BAD_REQUEST,
                 data={
@@ -126,11 +127,11 @@ class CourseViewSet(EduModelViewSet):
                 if 'files' in act_raw_safe:
                     del act_raw_safe['files']
 
-                act = Activity.objects.filter(id=act_id)\
-
-                if 'files' in act_raw:
-                    for f in act_raw['files']:
-                        act.files.add(f)
+                act = Activity.objects.filter(id=act_id) \
+ \
+                        if 'files' in act_raw:
+                            for f in act_raw['files']:
+                                act.files.add(f)
 
                 act.update(**act_raw_safe)
                 dont_delete += [act_id]
@@ -181,10 +182,10 @@ class CourseEnrollmentViewSet(EduModelViewSet):
                         return False
 
                     return p.validated_data['role'] == CourseEnrollment.EnrollmentRole.student and \
-                           CourseEnrollment \
-                               .get_courses_of_teacher(request.user)\
-                               .filter(id=p.validated_data['course'].id)\
-                               .exists()
+                        CourseEnrollment \
+                            .get_courses_of_teacher(request.user) \
+                            .filter(id=p.validated_data['course'].id) \
+                            .exists()
 
                 return request_user_is_staff(request) or teacher_adds_student()
             else:
@@ -192,20 +193,29 @@ class CourseEnrollmentViewSet(EduModelViewSet):
 
         def has_object_permission(self, request: Request, view: "CourseEnrollmentViewSet", obj: CourseEnrollment):
             if view.action in ["destroy"]:
+                return request_user_is_staff(request)
+            elif view.action in ["update", "partial_update"]:
                 def teacher_removes_student():
                     if not request_user_is_authenticated(request):
                         return False
 
-                    return obj.role == CourseEnrollment.EnrollmentRole.student and \
-                           CourseEnrollment \
-                               .get_courses_of_teacher(request.user) \
-                               .filter(id=obj.course.id) \
-                               .exists()
+                    p = CourseEnrollmentReadSerializer(data=request.data)
 
-                return request_user_is_staff(request) or \
-                    teacher_removes_student()
-            elif view.action in ["update", "partial_update"]:
-                return request_user_is_staff(request)
+                    if not p.is_valid():
+                        return False
+
+                    return \
+                            p.validated_data["role"] == CourseEnrollment.EnrollmentRole.student and \
+                            p.validated_data["person"] == obj.person and \
+                            p.validated_data["course"] == obj.course and \
+                            p.validated_data["finished_on"] is not None and \
+                            obj.role == CourseEnrollment.EnrollmentRole.student and \
+                            CourseEnrollment \
+                                .get_courses_of_teacher(request.user) \
+                                .filter(id=obj.course.id) \
+                                .exists()
+
+                return request_user_is_staff(request) or teacher_removes_student()
             else:
                 return request_user_is_authenticated(request)
 
@@ -216,7 +226,6 @@ class CourseEnrollmentViewSet(EduModelViewSet):
             return None
         else:
             return CourseEnrollment.objects.all()
-
 
     def get_serializer_class(self):
         method = self.request.method
