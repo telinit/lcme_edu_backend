@@ -124,7 +124,11 @@ class MarkViewSet(EduModelViewSet):
             q1 = Q(author=u)
             q2 = Q(student__in=users)
 
-            courses = CourseEnrollment.get_courses_of_teacher(u)
+            courses = Course.objects.filter(
+                enrollments__person=u,
+                enrollments__role__in=[CourseEnrollment.EnrollmentRole.teacher, CourseEnrollment.EnrollmentRole.manager, CourseEnrollment.EnrollmentRole.observer],
+                enrollments__finished_on__isnull=True
+            )
             q3 = Q(activity__course__in=courses)
 
             return Mark.objects.filter(q1 | q2 | q3)
