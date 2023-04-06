@@ -71,6 +71,14 @@ class Course(CommonObject):
             role=CourseEnrollment.EnrollmentRole.student
         )
 
+    @property
+    def managers(self) -> QuerySet:
+        return CourseEnrollment.objects.filter(
+            course=self,
+            finished_on=None,
+            role=CourseEnrollment.EnrollmentRole.manager
+        )
+
     def user_has_permissions(self, uid: str, read: bool = False, write: bool = False) -> bool:
         u = User(pk=uid)
 
@@ -89,6 +97,9 @@ class CourseEnrollment(CommonObject):
     class EnrollmentRole(TextChoices):
         teacher = 't', "Преподаватель"
         student = 's', "Учащийся"
+        manager = 'm', "Менеджер"
+        observer = 'o', "Наблюдатель"
+        listener = 'l', "Вольный слушатель"
 
     person = ForeignKey(User, verbose_name="Пользователь", related_name="enrollments", on_delete=CASCADE)
     course = ForeignKey(Course, verbose_name="Курс", related_name="enrollments", on_delete=CASCADE)

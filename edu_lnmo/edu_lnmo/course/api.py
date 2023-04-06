@@ -69,7 +69,10 @@ class CourseViewSet(EduModelViewSet):
                 return request_user_is_staff(request)
             elif view.action in ["bulk_set_activities"]:
                 return request_user_is_authenticated(request) and \
-                    (request_user_is_staff(request) or obj.teachers.filter(id=request.user.id).exists())
+                    (   request_user_is_staff(request)
+                     or obj.teachers.filter(id=request.user.id).exists()
+                     or obj.managers.filter(id=request.user.id).exists()
+                )
             else:
                 return request_user_is_authenticated(request)
 
@@ -171,7 +174,7 @@ class CourseEnrollmentViewSet(EduModelViewSet):
 
         def has_permission(self, request: Request, view: "CourseEnrollmentViewSet"):
             if view.action == "create":
-                def teacher_adds_student():
+                def teacher_adds_student_or_listener():
                     if not request_user_is_authenticated(request) or not request.data:
                         return False
 
@@ -180,13 +183,19 @@ class CourseEnrollmentViewSet(EduModelViewSet):
                     if not p.is_valid():
                         return False
 
-                    return p.validated_data['role'] == CourseEnrollment.EnrollmentRole.student and \
-                        CourseEnrollment \
+                    in_role_ok = p.validated_data['role'] in [
+                            CourseEnrollment.EnrollmentRole.student,
+                            CourseEnrollment.EnrollmentRole.listener
+                        ]
+
+                    teacher_is_enrolled = lambda:CourseEnrollment \
                             .get_courses_of_teacher(request.user) \
                             .filter(id=p.validated_data['course'].id) \
                             .exists()
 
-                return request_user_is_staff(request) or teacher_adds_student()
+                    return in_role_ok and teacher_is_enrolled()
+
+                return request_user_is_staff(request) or teacher_adds_student_or_listener()
             else:
                 return request_user_is_authenticated(request)
 
@@ -194,7 +203,7 @@ class CourseEnrollmentViewSet(EduModelViewSet):
             if view.action in ["destroy"]:
                 return request_user_is_staff(request)
             elif view.action in ["update", "partial_update"]:
-                def teacher_removes_student():
+                def teacher_updates_student_or_listener() -> bool:
                     if not request_user_is_authenticated(request):
                         return False
 
@@ -203,18 +212,49 @@ class CourseEnrollmentViewSet(EduModelViewSet):
                     if not p.is_valid():
                         return False
 
-                    return \
-                            p.validated_data["role"] == CourseEnrollment.EnrollmentRole.student and \
-                            p.validated_data["person"] == obj.person and \
-                            p.validated_data["course"] == obj.course and \
-                            p.validated_data["finished_on"] is not None and \
-                            obj.role == CourseEnrollment.EnrollmentRole.student and \
-                            CourseEnrollment \
-                                .get_courses_of_teacher(request.user) \
-                                .filter(id=obj.course.id) \
-                                .exists()
+                    payload_role_ok = p.validated_data['role'] in [
+                            CourseEnrollment.EnrollmentRole.student,
+                            CourseEnrollment.EnrollmentRole.listener
+                        ]
 
-                return request_user_is_staff(request) or teacher_removes_student()
+                    obj_role_ok = obj.role in [
+                            CourseEnrollment.EnrollmentRole.student,
+                            CourseEnrollment.EnrollmentRole.listener
+                        ]
+
+                    same_person = p.validated_data["person"] == obj.person
+
+                    same_course = p.validated_data["course"] == obj.course
+
+                    not_finished = obj.finished_on is None
+
+                    teacher_enrolled = obj.course and CourseEnrollment \
+                        .get_courses_of_teacher(request.user) \
+                        .filter(id=obj.course.id) \
+                        .exists()
+
+                    return payload_role_ok and same_person and same_course and not_finished and \
+                            obj_role_ok and teacher_enrolled
+
+                def manager_does_stuff() -> bool:
+                    p = CourseEnrollmentWriteSerializer(data=request.data)
+
+                    if not p.is_valid():
+                        return False
+
+                    is_manager = CourseEnrollment.objects.filter(
+                        course=obj.course,
+                        person=request.user,
+                        role=CourseEnrollment.EnrollmentRole.manager
+                    ).exists()
+
+                    payload_role_ok = p.validated_data['role'] != CourseEnrollment.EnrollmentRole.manager
+                    modify_self = p.validated_data['person'] == request.user
+                    not_finished = obj.finished_on is None
+
+                    return is_manager and (payload_role_ok or modify_self) and not_finished
+
+                return request_user_is_staff(request) or teacher_updates_student_or_listener() or manager_does_stuff()
             else:
                 return request_user_is_authenticated(request)
 

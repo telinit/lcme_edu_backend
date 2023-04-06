@@ -48,14 +48,25 @@ class ImportForCourseResultSerializer(Serializer):
 class ActivityViewSet(EduModelViewSet):
     class ActivityPermissions(BasePermission):
         def has_write_access(self, request: Request):
+            p = ActivitySerializer(data = request.data)
+            if not p.is_valid():
+                return False
+
             is_authenticated = request_user_is_authenticated(request)
             is_staff = lambda: request_user_is_staff(request)
-            is_teacher = lambda: "course" in request.data and CourseEnrollment \
+            is_teacher = lambda: CourseEnrollment \
                 .get_courses_of_teacher(request.user) \
-                .filter(id=uuid.UUID(request.data["course"])) \
+                .filter(id=p.course.id) \
                 .exists()
 
-            return is_authenticated and (is_staff() or is_teacher())
+            is_manager = lambda: CourseEnrollment.objects.filter(
+                    person=request.user,
+                    course=p.course,
+                    role=CourseEnrollment.EnrollmentRole.manager,
+                    finished_on__isnull=True
+                ).exists()
+
+            return is_authenticated and (is_staff() or is_teacher() or is_manager())
 
         def has_permission(self, request: Request, view: "ActivityViewSet"):
             if view.action in ["create"]:
@@ -65,9 +76,9 @@ class ActivityViewSet(EduModelViewSet):
 
         def has_object_permission(self, request: Request, view: "ActivityViewSet", obj: Activity):
             if view.action in ["update", "partial_update", "destroy"]:
-                if "course" in request.data and uuid.UUID(request.data["course"]) != obj.course.id:
-                    return False
-                return self.has_write_access(request)
+                same_course = ("course" in request.data) and uuid.UUID(request.data["course"]) == obj.course.id
+
+                return same_course and self.has_write_access(request)
             else:
                 return request_user_is_authenticated(request)
 

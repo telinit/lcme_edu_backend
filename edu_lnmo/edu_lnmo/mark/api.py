@@ -57,58 +57,57 @@ class MarkViewSet(EduModelViewSet):
                     request.user and request.user.id and \
                     request.user.children.filter(id=str(request.GET.get("student"))).exists()
                 return request_user_is_staff(request) or is_getting_self() or is_getting_child()
-            elif view.action == "create":  # TODO: Refactor this
+            elif view.action == "create":
                 if not request_user_is_authenticated(request):
                     return False
                 elif request_user_is_staff(request):
                     return True
-                elif "activity" in request.data:
-                    activity: QuerySet = Activity.objects \
-                        .select_related("course") \
-                        .filter(id=UUID(request.data["activity"]))
-                    student = User(id=UUID(request.data["student"]))
+                else:
+                    p = MarkSerializer(data=request.data)
+                    if not p.is_valid():
+                        return False
 
+                    student = p.validated_data["student"]
+                    if not student:
+                        return False
+
+                    activity = p.validated_data["activity"]
                     if not activity:
                         return False
 
-                    activity: Activity = activity[0]
+                    course = activity.course
 
-                    if Mark.objects.filter(activity=activity, student=student).count() >= activity.marks_limit:
-                        return False
+                    enrolled_and_has_access = CourseEnrollment.objects\
+                        .filter(
+                            course=course,
+                            person=request.user,
+                            role__in=[CourseEnrollment.EnrollmentRole.teacher, CourseEnrollment.EnrollmentRole.manager]
+                        ).exists()
 
-                    course = Course.objects.filter(id=activity.course.id)
-                    teachers = CourseEnrollment \
-                        .get_teachers_of_courses(course, id=request.user.id)
-                    students = CourseEnrollment \
-                        .get_students_of_courses(course, id=student.id)
+                    student_enrolled = CourseEnrollment.objects\
+                        .filter(
+                            course=course,
+                            person=student,
+                            role=CourseEnrollment.EnrollmentRole.student
+                        ).exists()
 
-                    if teachers.exists() and students.exists():
-                        return True
+                    mark_limit_ok = Mark.objects.filter(activity=activity, student=student).count() <= activity.marks_limit
 
-                    return False
-                elif "course" in request.data:
-                    student = User(id=UUID(request.data["student"]))
-                    course = Course.objects.filter(id=UUID(request.data["course"]))
-                    teachers = CourseEnrollment \
-                        .get_teachers_of_courses(course) \
-                        .filter(person=request.user)
-                    students = CourseEnrollment \
-                        .get_students_of_courses(course) \
-                        .filter(person=student)
+                    author_ok = p.validated_data["author"] == request.user
 
-                    if teachers.exists() and students.exists():
-                        return True
-                else:
-                    return False
-
-                return False
+                    return enrolled_and_has_access and student_enrolled and mark_limit_ok and author_ok
             else:
                 return request_user_is_authenticated(request)
 
         def has_object_permission(self, request: Request, view: "MarkViewSet", obj: Mark):
             if view.action in ["update", "partial_update", "destroy"]:
-                return request_user_is_staff(request) or \
-                    CourseEnrollment.get_teachers_of_courses([obj.activity.course]).filter(id=request.user.id).exists()
+                enrolled_and_has_access = CourseEnrollment.objects \
+                    .filter(
+                    course=obj.activity.course,
+                    person=request.user,
+                    role__in=[CourseEnrollment.EnrollmentRole.teacher, CourseEnrollment.EnrollmentRole.manager]
+                ).exists()
+                return request_user_is_staff(request) or enrolled_and_has_access
             else:
                 return request_user_is_authenticated(request)
 
