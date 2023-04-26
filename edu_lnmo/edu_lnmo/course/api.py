@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import AnonymousUser
 from django.db import transaction
 from django.db.models import Q
@@ -88,8 +90,11 @@ class CourseViewSet(EduModelViewSet):
         ser = BulkSetActivitiesSerializer(data=request.data)
 
         if not ser.is_valid():
+            with open("bad_payloads.log", "tw+") as f:
+                f.writelines([f"[{datetime.datetime.utcnow()}] Got a bad payload: ", str(request.data), ""])
+
             EmailManager.send_manually_exception_email(request, Exception(
-                "BulkSetActivitiesSerializer failed to parse the payload"))
+                f"BulkSetActivitiesSerializer failed to parse the payload"))
             return Response(
                 status=HTTP_400_BAD_REQUEST,
                 data={
