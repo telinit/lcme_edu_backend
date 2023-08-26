@@ -17,8 +17,16 @@ class Course(CommonObject):
         SEM = 'SEM', "Семинар"
         CLB = 'CLB', "Кружок"
         ELE = 'ELE', "Предмет по выбору"
+        ADM = 'ADM', "Вступительное испытание"
+
+    class MarkingSystem(TextChoices):
+        NOP = 'NOP', "Без оценивания"
+        FVE = 'FVE', "5-бальная"
+        HND = 'HND', "100-бальная"
+        CST = 'CST', "Произвольная"
 
     type = CharField(choices=CourseType.choices, default=CourseType.GEN, max_length=3)
+    marking = CharField(choices=MarkingSystem.choices, default=MarkingSystem.FVE, max_length=3)
 
     title = CharField(max_length=255, verbose_name="Название", blank=False)
     description = TextField(verbose_name="Описание", blank=True, null=True)
@@ -37,6 +45,8 @@ class Course(CommonObject):
     logo = ForeignKey(File, related_name="course_logos", verbose_name="Логотип", blank=True, null=True, on_delete=SET_NULL)
     cover = ForeignKey(File, related_name="course_covers", verbose_name="Обложка", blank=True, null=True, on_delete=SET_NULL)
 
+    archived = DateTimeField(verbose_name="Дата архивирования", null=True, blank=True)
+
     def __str__(self):
         info = ", ".join([*filter(lambda x:x, [str(self.for_specialization), self.for_class, self.for_group])])
         return f"{self.title}" + (f" ({info})" if info else "")
@@ -52,7 +62,9 @@ class Course(CommonObject):
             Index(fields=['for_specialization']),
             Index(fields=['for_group']),
             Index(fields=['logo']),
-            Index(fields=['cover'])
+            Index(fields=['cover']),
+            Index(fields=['marking']),
+            Index(fields=['archived']),
         ]
 
     @property

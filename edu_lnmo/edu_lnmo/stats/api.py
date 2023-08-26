@@ -26,7 +26,7 @@ class StatsViewSet(ViewSet):
     @action(methods=['GET'], detail=False)
     def counters(self, blah):
         obj = {
-            "courses": Course.objects.count(),
+            "courses": Course.objects.filter().count(),
             "users": User.objects.count(),
             "activities": Activity.objects.count(),
             "marks": Mark.objects.count(),
