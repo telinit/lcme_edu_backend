@@ -33,21 +33,28 @@ from ..util.string import email_ok
 
 
 class UserShallowSerializer(EduModelSerializer):
+
     roles = SerializerMethodField(method_name="get_roles", read_only=True, help_text="List of user's roles. A set of: admin, staff, teacher, student, parent")
     current_class = SerializerMethodField(method_name="get_class", read_only=True, help_text="Student's current class. null if none.")
     current_spec = SerializerMethodField(method_name="get_spec", read_only=True, help_text="Student's current education specialization. null if none.")
 
+    @swagger_serializer_method(serializers.ListField(
+        child=serializers.CharField()
+    ))
     def get_roles(self, obj, *args, **kwargs) -> list[str]:
         u: User = obj
 
         res = []
 
+        # TODO: Optimize
         if len(u.children.all()) > 0:
             res += ["parent"]
 
+        # TODO: Optimize
         if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.student, u.enrollments.filter(finished_on=None))]) > 0:
             res += ["student"]
 
+        # TODO: Optimize
         if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.teacher, u.enrollments.filter(finished_on=None))]) > 0:
             res += ["teacher"]
 

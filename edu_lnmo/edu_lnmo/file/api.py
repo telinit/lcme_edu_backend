@@ -1,7 +1,9 @@
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, viewsets, serializers
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
@@ -19,7 +21,7 @@ class FileSerializer(EduModelSerializer):
     download_url = SerializerMethodField("get_download_url", read_only=True)
 
     def get_download_url(self):
-        return f"/api/file/{self.id}/download"
+        return f"/api/file/{self.id}/{self.name}"
 
     class Meta(EduModelSerializer.Meta):
         model = File
@@ -62,3 +64,9 @@ class FileViewSet(EduModelViewSet):
     serializer_class = FileSerializer
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [FilePermissions]
+
+    @swagger_auto_schema(responses={201: FileSerializer()})
+    @action(methods=['POST'], detail=True, url_path='upload')
+    def upload(self, request: Request, pk, *args, **kwargs):
+        pass
+        # TODO
