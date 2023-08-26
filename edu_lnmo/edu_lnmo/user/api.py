@@ -41,30 +41,10 @@ class UserShallowSerializer(EduModelSerializer):
     @swagger_serializer_method(serializers.ListField(
         child=serializers.CharField()
     ))
-    def get_roles(self, obj, *args, **kwargs) -> list[str]:
+    def get_roles(self, obj) -> list[str]:
         u: User = obj
 
-        res = []
-
-        # TODO: Optimize
-        if len(u.children.all()) > 0:
-            res += ["parent"]
-
-        # TODO: Optimize
-        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.student, u.enrollments.filter(finished_on=None))]) > 0:
-            res += ["student"]
-
-        # TODO: Optimize
-        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.teacher, u.enrollments.filter(finished_on=None))]) > 0:
-            res += ["teacher"]
-
-        if u.is_staff:
-            res += ["staff"]
-
-        if u.is_superuser:
-            res += ["admin"]
-
-        return res
+        return u.roles
 
     @swagger_serializer_method(serializer_or_field=CharField)
     def get_class(self, user) -> Optional[str]:

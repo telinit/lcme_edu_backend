@@ -16,7 +16,7 @@ from django.utils.translation import gettext_lazy as _
 
 from Crypto.PublicKey import RSA
 
-from ..settings import PASSWORD_PUB_KEY, AUTH_USER_MODEL
+from ..settings import PASSWORD_PUB_KEY, AUTH_USER_MODEL, FILE_QUOTA_BASE
 
 
 def validate_password(pw):
@@ -34,6 +34,8 @@ class User(AbstractUser, CommonObject):
     password    = CharField(_("password"), max_length=128, validators=[validate_password])
 
     children    = ManyToManyField("User", related_name="parents", verbose_name="Дети", blank=True)
+
+    file_quota  = IntegerField(verbose_name="Квота на файлы", blank=True, null=True, default=FILE_QUOTA_BASE)
 
     class Meta:
         verbose_name = "Пользователь"
@@ -53,6 +55,30 @@ class User(AbstractUser, CommonObject):
 
     def full_name(self):
         return f"{self.last_name} {self.first_name} {self.middle_name}"
+
+    @property
+    def roles(self) -> list[str]:
+        res = []
+
+        # TODO: Optimize
+        if len(self.children.all()) > 0:
+            res += ["parent"]
+
+        # TODO: Optimize
+        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.student, self.enrollments.filter(finished_on=None))]) > 0:
+            res += ["student"]
+
+        # TODO: Optimize
+        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.teacher, self.enrollments.filter(finished_on=None))]) > 0:
+            res += ["teacher"]
+
+        if self.is_staff:
+            res += ["staff"]
+
+        if self.is_superuser:
+            res += ["admin"]
+
+        return res
 
     def __str__(self):
         return f"{self.username}"
