@@ -20,6 +20,7 @@ def request_user_is_admin(request: Request):
     return request_user_is_authenticated(request) and \
            request.user.is_superuser
 
+
 class EduModelViewSet(ModelViewSet):
     pass
 

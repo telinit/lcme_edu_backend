@@ -19,8 +19,6 @@ from .models import Course, CourseEnrollment
 from ..activity.api import ActivitySerializer
 from ..activity.models import Activity
 from ..common.api import ErrorMessageSerializer
-from ..education.api import EducationSpecializationSerializer
-from ..file.api import FileSerializer
 from ..user.api import UserShallowSerializer
 from ..user.auth import MultiTokenAuthentication
 from ..user.models import User

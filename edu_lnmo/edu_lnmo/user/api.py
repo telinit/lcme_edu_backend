@@ -60,7 +60,7 @@ class UserShallowSerializer(EduModelSerializer):
     @swagger_serializer_method(serializer_or_field=EducationSpecializationSerializer)
     def get_spec(self, user) -> Optional[EducationSpecializationSerializer]:
 
-        edus = [*filter(lambda edu: edu.finished == None, user.education.all())]
+        edus = [*filter(lambda edu: edu.finished is None, user.education.all())]
         edus.sort(key=lambda edu: edu.started)
 
         if not edus:

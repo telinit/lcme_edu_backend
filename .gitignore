@@ -4,3 +4,7 @@ venv
 *.tmp
 *.csv
 **/__pycache__/
+/2022-12-12_18-42-23.sql
+/2022-12-12_18-42-23.sql.gz
+/edu_lnmo/bad_payloads.log
+/drop_all.sql

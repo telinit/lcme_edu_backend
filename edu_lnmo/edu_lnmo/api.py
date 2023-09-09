@@ -5,7 +5,8 @@ from .captcha.api import CaptchaViewSet
 from .common.api import DepartmentViewSet, OrganizationViewSet
 from .course.api import CourseViewSet, CourseEnrollmentViewSet
 from .education.api import EducationSpecializationViewSet, EducationViewSet
-from .file.api import FileViewSet
+
+from .file.api import FileViewSet, FileUploadAPI
 from .mark.api import MarkViewSet
 from .message.api import MessageViewSet
 from .olympiad.api import OlympiadViewSet, OlympiadParticipationViewSet
@@ -30,7 +31,9 @@ api.register(r'education', EducationViewSet, basename="Education")
 api.register(r'olympiad/participation', OlympiadParticipationViewSet, basename="OlympiadParticipation")
 api.register(r'olympiad', OlympiadViewSet, basename="Olympiad")
 
+api.register(r'file', FileUploadAPI, basename="FileUpload")
 api.register(r'file', FileViewSet, basename="File")
+
 api.register(r'mark', MarkViewSet, basename="Mark")
 api.register(r'message', MessageViewSet, basename="Message")
 api.register(r'unread', UnreadObjectViewSet, basename="UnreadObject")
