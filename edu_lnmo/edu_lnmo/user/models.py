@@ -60,16 +60,13 @@ class User(AbstractUser, CommonObject):
     def roles(self) -> list[str]:
         res = []
 
-        # TODO: Optimize
-        if len(self.children.all()) > 0:
+        if self.children.count() > 0:
             res += ["parent"]
 
-        # TODO: Optimize
-        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.student, self.enrollments.filter(finished_on=None))]) > 0:
+        if self.enrollments.filter(finished_on=None, role = "s").count() > 0:
             res += ["student"]
 
-        # TODO: Optimize
-        if len([*filter(lambda enr: enr.role == CourseEnrollment.EnrollmentRole.teacher, self.enrollments.filter(finished_on=None))]) > 0:
+        if self.enrollments.filter(finished_on=None, role="t").count() > 0:
             res += ["teacher"]
 
         if self.is_staff:

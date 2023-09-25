@@ -47,21 +47,17 @@ class ImportForCourseResultSerializer(Serializer):
 
 class ActivityViewSet(EduModelViewSet):
     class ActivityPermissions(BasePermission):
-        def has_write_access(self, request: Request):
-            p = ActivitySerializer(data = request.data)
-            if not p.is_valid():
-                return False
-
+        def has_write_access(self, request: Request, obj: Activity):
             is_authenticated = request_user_is_authenticated(request)
             is_staff = lambda: request_user_is_staff(request)
             is_teacher = lambda: CourseEnrollment \
                 .get_courses_of_teacher(request.user) \
-                .filter(id=p.course.id) \
+                .filter(id=obj.course.id) \
                 .exists()
 
             is_manager = lambda: CourseEnrollment.objects.filter(
                     person=request.user,
-                    course=p.course,
+                    course=obj.course,
                     role=CourseEnrollment.EnrollmentRole.manager,
                     finished_on__isnull=True
                 ).exists()
@@ -75,10 +71,12 @@ class ActivityViewSet(EduModelViewSet):
                 return request_user_is_authenticated(request)
 
         def has_object_permission(self, request: Request, view: "ActivityViewSet", obj: Activity):
-            if view.action in ["update", "partial_update", "destroy"]:
+            if view.action == "destroy":
+                return self.has_write_access(request, obj)
+            elif view.action in ["update", "partial_update"]:
                 same_course = ("course" in request.data) and uuid.UUID(request.data["course"]) == obj.course.id
 
-                return same_course and self.has_write_access(request)
+                return same_course and self.has_write_access(request, obj)
             else:
                 return request_user_is_authenticated(request)
 

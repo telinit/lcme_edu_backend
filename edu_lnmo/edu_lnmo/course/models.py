@@ -25,8 +25,8 @@ class Course(CommonObject):
         HND = 'HND', "100-бальная"
         CST = 'CST', "Произвольная"
 
-    type = CharField(choices=CourseType.choices, default=CourseType.GEN, max_length=3)
-    marking = CharField(choices=MarkingSystem.choices, default=MarkingSystem.FVE, max_length=3)
+    type = CharField(choices=CourseType.choices, default=CourseType.GEN, max_length=3, null=False)
+    marking = CharField(choices=MarkingSystem.choices, default=MarkingSystem.FVE, max_length=3, null=False)
 
     title = CharField(max_length=255, verbose_name="Название", blank=False)
     description = TextField(verbose_name="Описание", blank=True, null=True)

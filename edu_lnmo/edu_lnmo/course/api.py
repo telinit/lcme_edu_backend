@@ -168,7 +168,7 @@ class CourseViewSet(EduModelViewSet):
     serializer_class = CourseSerializer
     authentication_classes = [MultiTokenAuthentication]
     permission_classes = [CoursePermissions]
-    filterset_fields = ["for_specialization", "for_group", "for_class", "enrollments__person", "enrollments__role"]
+    filterset_fields = {k: ['exact', 'isnull'] for k in ["for_specialization", "for_group", "for_class", "enrollments__person", "enrollments__role", "archived"]}
     search_fields = ["title", "description"]
 
 
