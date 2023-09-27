@@ -45,7 +45,7 @@ class CoursesDataImporter(CSVDataImporter):
                 department=dep
             )
 
-            teacher, _ = create_user(first_name, middle_name, last_name)
+            teacher, teacher_created = create_user(first_name, middle_name, last_name)
 
             course, _ = Course.objects.get_or_create(
                 title=rec["Курс"].strip(),
@@ -63,15 +63,19 @@ class CoursesDataImporter(CSVDataImporter):
                 finished_on=None
             )
 
-            res.objects += [org, dep, spec, teacher, course, course_enrollment]
+            res.objects += [org, dep, spec, (teacher, teacher_created), course, course_enrollment]
 
             if teacher.full_name() not in users:
-                users[teacher.full_name()] = teacher
+                users[teacher.full_name()] = (teacher, teacher_created)
 
-        for user in users.values():
-            pw = generate_password()
-            user.set_password(pw)
-            user.save()
+        for user, teacher_created in users.values():
+            if teacher_created:
+                pw = generate_password()
+                user.set_password(pw)
+                user.save()
+            else:
+                pw = "NOT CHANGED"
+
             res.report_rows += [[
                 user.last_name,
                 user.first_name,
