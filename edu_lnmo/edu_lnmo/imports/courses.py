@@ -45,7 +45,7 @@ class CoursesDataImporter(CSVDataImporter):
                 department=dep
             )
 
-            teacher = create_user(first_name, middle_name, last_name)
+            teacher, _ = create_user(first_name, middle_name, last_name)
 
             course, _ = Course.objects.get_or_create(
                 title=rec["Курс"].strip(),
