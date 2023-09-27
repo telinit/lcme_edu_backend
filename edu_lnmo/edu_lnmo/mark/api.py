@@ -137,7 +137,7 @@ class MarkViewSet(EduModelViewSet):
     authentication_classes = [MultiTokenAuthentication, SessionAuthentication]
     permission_classes = [MarkPermissions]
 
-    filterset_fields = ["author", "student", "value", "activity", "activity__course"]
+    filterset_fields = ["author", "student", "value", "activity", "activity__course", "activity__course__archived"]
     search_fields = ["comment"]
 
     def export_csv_make_row(self, student, education, enrollment, csv_out):

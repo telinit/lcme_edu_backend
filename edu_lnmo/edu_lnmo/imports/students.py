@@ -84,7 +84,8 @@ class StudentsDataImporter(CSVDataImporter):
             courses = Course.objects.filter(
                 for_class=rec["Класс"].strip(),
                 for_group="",
-                for_specialization=spec
+                for_specialization=spec,
+                archived=None
             )
 
             course_enrollments = []
