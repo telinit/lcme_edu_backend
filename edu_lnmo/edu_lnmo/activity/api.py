@@ -16,6 +16,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from .models import Activity
 from ..common.api import ErrorMessageSerializer
+from ..course.api import CourseSerializer
 from ..course.models import Course, CourseEnrollment
 from ..imports.activities import ActivitiesDataImporter
 from ..user.auth import MultiTokenAuthentication
@@ -66,7 +67,20 @@ class ActivityViewSet(EduModelViewSet):
 
         def has_permission(self, request: Request, view: "ActivityViewSet"):
             if view.action in ["create"]:
-                return self.has_write_access(request)
+                ser = ActivitySerializer(data=request.data)
+                if not ser.is_valid():
+                    return Response(status=HTTP_400_BAD_REQUEST)
+
+                teacher_creates_activity = CourseEnrollment.objects.filter(
+                    course=ser.validated_data["course"],
+                    person=request.user,
+                    role__in=[
+                        CourseEnrollment.EnrollmentRole.manager,
+                        CourseEnrollment.EnrollmentRole.teacher
+                    ]
+                ).count() > 0
+
+                return teacher_creates_activity or request_user_is_staff(request)
             else:
                 return request_user_is_authenticated(request)
 
@@ -129,6 +143,12 @@ class ActivityViewSet(EduModelViewSet):
                 for c in courses[1:]:
                     activities |= c.activities.all()
                 return activities
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def perform_update(self, serializer):
+        serializer.save()
 
     serializer_class = ActivitySerializer
     authentication_classes = [MultiTokenAuthentication]

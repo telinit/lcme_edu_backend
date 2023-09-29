@@ -16,7 +16,6 @@ from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND, HTTP_4
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Course, CourseEnrollment
-from ..activity.api import ActivitySerializer
 from ..activity.models import Activity
 from ..common.api import ErrorMessageSerializer
 from ..user.api import UserShallowSerializer
@@ -49,12 +48,6 @@ class CourseSerializer(EduModelWriteSerializer):
         fields = '__all__'
 
 
-class BulkSetActivitiesSerializer(Serializer):
-    # delete = ListField(child=UUIDField())
-    create = ActivitySerializer(many=True)
-    update = DictField(child=ActivitySerializer())
-
-
 class CourseViewSet(EduModelViewSet):
     class CoursePermissions(BasePermission):
 
@@ -65,7 +58,18 @@ class CourseViewSet(EduModelViewSet):
                 return request_user_is_authenticated(request)
 
         def has_object_permission(self, request: Request, view: "CourseViewSet", obj: Course):
-            if view.action in ["update", "partial_update", "destroy"]:
+            if view.action in ["update", "partial_update"]:
+                teacher_updates_course = Course.objects.filter(
+                    enrollments__person=request.user,
+                    enrollments__role__in=[
+                        CourseEnrollment.EnrollmentRole.manager,
+                        CourseEnrollment.EnrollmentRole.teacher
+                    ],
+                    id=obj.id
+                ).count() > 0
+
+                return request_user_is_staff(request) or teacher_updates_course
+            elif view.action == "destroy":
                 return request_user_is_staff(request)
             elif view.action in ["bulk_set_activities"]:
                 return request_user_is_authenticated(request) and \
@@ -75,78 +79,6 @@ class CourseViewSet(EduModelViewSet):
                 )
             else:
                 return request_user_is_authenticated(request)
-
-    @swagger_auto_schema(request_body=BulkSetActivitiesSerializer,
-                         responses={200: 'OK', HTTP_400_BAD_REQUEST: ErrorMessageSerializer})
-    @action(methods=['POST'], detail=True)
-    def bulk_set_activities(self, request: Request, pk):
-        course = Course.objects.filter(id=pk)
-        if not course:
-            return Response(status=HTTP_404_NOT_FOUND)
-
-        course = course[0]
-        ser = BulkSetActivitiesSerializer(data=request.data)
-
-        if not ser.is_valid():
-            with open("bad_payloads.log", "tw+") as f:
-                f.writelines([f"[{datetime.datetime.utcnow()}] Got a bad payload: ", str(request.data), ""])
-
-            EmailManager.send_manually_exception_email(request, Exception(
-                f"BulkSetActivitiesSerializer failed to parse the payload"))
-            return Response(
-                status=HTTP_400_BAD_REQUEST,
-                data={
-                    'code': HTTP_400_BAD_REQUEST,
-                    'message': str(ser.errors)
-                }
-            )
-
-        dont_delete = []
-
-        with transaction.atomic():
-            for act_raw in ser.validated_data['create']:
-                if act_raw['course'].id != course.id:
-                    EmailManager.send_manually_exception_email(request, Exception(
-                        "act_raw['course'].id != course.id"))
-                    return Response(status=HTTP_400_BAD_REQUEST)
-
-                act_raw_safe = dict(act_raw)
-                if 'files' in act_raw_safe:
-                    del act_raw_safe['files']
-
-                act = Activity(**act_raw_safe)
-
-                if 'files' in act_raw:
-                    for f in act_raw['files']:
-                        act.files.add(f)
-
-                act.save()
-                dont_delete += [act.id]
-
-            for act_id, act_raw in ser.validated_data['update'].items():
-                if act_raw['course'].id != course.id:
-                    EmailManager.send_manually_exception_email(request, Exception(
-                        "act_raw['course'].id != course.id"))
-                    return Response(status=HTTP_400_BAD_REQUEST)
-
-                act_raw_safe = dict(act_raw)
-                if 'files' in act_raw_safe:
-                    del act_raw_safe['files']
-
-                act = Activity.objects.filter(id=act_id)
-                if 'files' in act_raw:
-                    for f in act_raw['files']:
-                        act.files.add(f)
-
-                act.update(**act_raw_safe)
-                dont_delete += [act_id]
-
-            Activity.objects.filter(
-                Q(course=course),
-                ~Q(id__in=dont_delete),
-            ).delete()
-
-        return Response()
 
     def get_queryset(self):
         u: User = self.request.user
