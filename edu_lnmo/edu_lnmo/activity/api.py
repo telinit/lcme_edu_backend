@@ -144,11 +144,43 @@ class ActivityViewSet(EduModelViewSet):
                     activities |= c.activities.all()
                 return activities
 
+    @staticmethod
+    def fix_activities_order(course: Course):
+        for i, a in enumerate(course.activities.all().order_by("order"), start=1):
+            if a.order != i:
+                a.order = i
+                a.save()
+
+    @staticmethod
+    def prepare_activity_insert(new_activity: Activity | dict = None):
+        course = new_activity.course if isinstance(new_activity, Activity) else new_activity["course"]
+        acts = Activity.objects.filter(course=course).order_by("order")
+        i = 1
+        for a in acts:
+            ord_ = new_activity.order if isinstance(new_activity, Activity) else new_activity["order"]
+
+            if ord_ == i:
+                i += 1
+
+            if a.order != i:
+                a.order = i
+                a.save()
+            i += 1
+
     def perform_create(self, serializer):
+        if isinstance(serializer, ActivitySerializer) and serializer.is_valid():
+            self.prepare_activity_insert(serializer.validated_data)
         serializer.save()
 
     def perform_update(self, serializer):
+        if isinstance(serializer, ActivitySerializer) and serializer.is_valid():
+            self.prepare_activity_insert(serializer.validated_data)
         serializer.save()
+
+    def perform_destroy(self, instance):
+        c = instance.course
+        instance.delete()
+        self.fix_activities_order(c)
 
     serializer_class = ActivitySerializer
     authentication_classes = [MultiTokenAuthentication]
