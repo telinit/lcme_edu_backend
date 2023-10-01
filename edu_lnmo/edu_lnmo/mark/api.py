@@ -144,12 +144,15 @@ class MarkViewSet(EduModelViewSet):
         course = enrollment.course
 
         marks = Mark.objects\
-            .filter(activity__course=course, student=student)\
-            .order_by('activity__order')
+            .filter(
+                activity__course=course,
+                activity__course__archived=None,
+                student=student
+        ).order_by('activity__order')
 
         acts: list[Activity] = [*Activity.objects
-        .filter(course=course)
-        .order_by('order')]
+            .filter(course=course)
+            .order_by('order')]
 
         act_marks_ix: dict[Activity, list[Mark]] = {}
         for m in marks:
@@ -231,7 +234,10 @@ class MarkViewSet(EduModelViewSet):
         try:
             students = User.objects.get(id=request.GET.get("student"))
         except:
-            students = User.objects.filter(enrollments__role=CourseEnrollment.EnrollmentRole.student).distinct()
+            students = User.objects\
+                .filter(enrollments__role=CourseEnrollment.EnrollmentRole.student,
+                        enrollments__finished_on=None)\
+                .distinct()
 
         def init_csv():
             out_buff = StringIO()
@@ -267,9 +273,10 @@ class MarkViewSet(EduModelViewSet):
             educations = Education.objects.filter(student=student).order_by('-started')[:1].prefetch_related(
                 'specialization')
             education = educations[0] if educations else None
-            enrollments = CourseEnrollment.objects.filter(person=student,
-                                                          role=CourseEnrollment.EnrollmentRole.student).prefetch_related(
-                'course')
+            enrollments = CourseEnrollment.objects.filter(
+                person=student,
+                role=CourseEnrollment.EnrollmentRole.student
+            ).prefetch_related('course')
 
             for enrollment in enrollments:
                 self.export_csv_make_row(student, education, enrollment, csv_out)
