@@ -4,6 +4,7 @@ from typing import Optional
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import AnonymousUser, update_last_login
+from django.db import transaction
 from django.db.migrations import serializer
 from django.db.models import Q, F
 from drf_yasg.utils import swagger_auto_schema, swagger_serializer_method
@@ -24,6 +25,7 @@ from .models import User, MultiToken
 from ..course.models import CourseEnrollment
 from ..education.api import EducationShallowSerializer, EducationDeepSerializer, EducationSpecializationSerializer
 from ..education.models import Education, EducationSpecialization
+from ..imports.courses import CoursesDataImporter
 from ..imports.students import StudentsDataImporter, StudentsImportResult
 from ..olympiad.api import OlympiadSerializer, OlympiadParticipationSerializer
 from ..settings import EMAIL_JWT_SECRET
@@ -121,6 +123,12 @@ class ImportStudentsCSVResult(serializers.Serializer):
     data = serializers.ListField(child=serializers.ListField(child=serializers.CharField()))
 
 
+class ImportTeachersCSVRequest(serializers.Serializer):
+    data = serializers.CharField()
+
+class ImportTeachersCSVResult(serializers.Serializer):
+    data = serializers.ListField(child=serializers.ListField(child=serializers.CharField()))
+
 class UserViewSet(EduModelViewSet):
     class UserPermissions(BasePermission):
 
@@ -131,7 +139,7 @@ class UserViewSet(EduModelViewSet):
                 return True  # Permissions are checked inside those functions
             elif view.action in ["retrieve", "get-deep", "login", "reset_password_request", "reset_password_complete"]:
                 return True
-            elif view.action in ["create", "import_students_csv"]:
+            elif view.action in ["create", "import_students_csv", "import_teachers_csv"]:
                 return request_user_is_staff(request)
             elif view.action in ["list", "logout", "self", "get_deep"]:
                 return request.user and request.user.is_authenticated
@@ -348,6 +356,24 @@ class UserViewSet(EduModelViewSet):
         if not ser.is_valid():
             return Response('Bad data', status=HTTP_400_BAD_REQUEST)
 
-        results: StudentsImportResult = StudentsDataImporter().do_import(ser.validated_data["data"])
+        with transaction.atomic():
+            results: StudentsImportResult = StudentsDataImporter().do_import(ser.validated_data["data"])
 
-        return Response(data={"data": results.report_rows})
+            return Response(data={"data": results.report_rows})
+
+    @swagger_auto_schema(request_body=ImportTeachersCSVRequest,
+                         responses={200: ImportTeachersCSVResult})
+    @action(methods=['POST'], detail=False)
+    def import_teachers_csv(self, request: Request):
+        if not request_user_is_staff(request):
+            return Response(status=HTTP_403_FORBIDDEN)
+
+        ser = ImportTeachersCSVRequest(data=request.data)
+
+        if not ser.is_valid():
+            return Response('Bad data', status=HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            results: StudentsImportResult = CoursesDataImporter().do_import(ser.validated_data["data"])
+
+            return Response(data={"data": results.report_rows})
