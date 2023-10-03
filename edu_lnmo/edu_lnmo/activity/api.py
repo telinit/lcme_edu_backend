@@ -7,12 +7,12 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, serializers, permissions
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
-from rest_framework.fields import CharField, IntegerField, UUIDField
+from rest_framework.fields import CharField, IntegerField, UUIDField, ListField
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_403_FORBIDDEN
 
 from .models import Activity
 from ..common.api import ErrorMessageSerializer
@@ -44,6 +44,10 @@ class ImportForCourseResultSerializer(Serializer):
         topic = CharField()
 
     objects = ImportForCourseResultObject(many=True)
+
+
+class ReorderSerializer(Serializer):
+    activity_ids = ListField(child=UUIDField())
 
 
 class ActivityViewSet(EduModelViewSet):
@@ -81,6 +85,8 @@ class ActivityViewSet(EduModelViewSet):
                 ).count() > 0
 
                 return teacher_creates_activity or request_user_is_staff(request)
+            elif view.action == "reorder":
+                return request_user_is_authenticated(request)
             else:
                 return request_user_is_authenticated(request)
 
@@ -126,6 +132,77 @@ class ActivityViewSet(EduModelViewSet):
 
             return Response(data={"objects": result_data})
 
+    @swagger_auto_schema(request_body=ReorderSerializer,
+                         responses={
+                             HTTP_200_OK: "On success.",
+                             HTTP_400_BAD_REQUEST: ErrorMessageSerializer(),
+                             HTTP_403_FORBIDDEN: ErrorMessageSerializer()
+                         })
+    @action(methods=['POST'], detail=False)
+    def reorder(self, request: Request):
+        ser = ReorderSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response(
+                status=HTTP_400_BAD_REQUEST,
+                data={
+                    'code': HTTP_400_BAD_REQUEST,
+                    'message': str(ser.errors)
+                }
+            )
+
+        if not ser.validated_data["activity_ids"]:
+            return Response(status=HTTP_200_OK)
+
+        activities = Activity.objects.filter(id__in=ser.validated_data["activity_ids"])
+
+        if activities.count() <= 0:
+            return Response(status=HTTP_200_OK)
+
+        activity_map = {act.id: act for act in activities}
+
+        if len(activity_map.keys()) != len(ser.validated_data["activity_ids"]):
+            return Response(
+                status=HTTP_400_BAD_REQUEST,
+                data={
+                    'code': HTTP_400_BAD_REQUEST,
+                    'message': "Activities are not unique."
+                }
+            )
+
+        course = activities[0].course
+
+        for act in activity_map.values():
+            if act.course != course:
+                return Response(
+                    status=HTTP_400_BAD_REQUEST,
+                    data={
+                        'code': HTTP_400_BAD_REQUEST,
+                        'message': "Activities are not in the same course."
+                    }
+                )
+
+        enrollments = CourseEnrollment.objects.filter(
+            course=course,
+            person=request.user,
+            finished_on__isnull=True,
+            role__in=[
+                CourseEnrollment.EnrollmentRole.manager,
+                CourseEnrollment.EnrollmentRole.teacher
+
+            ]
+        )
+
+        if enrollments.count() <= 0 and not request_user_is_staff(request):
+            return Response(status=HTTP_403_FORBIDDEN, data={'code': HTTP_403_FORBIDDEN, "message": "Not allowed"})
+
+        with transaction.atomic():
+            for i, aID in enumerate(ser.validated_data["activity_ids"], start=1):
+                a = activity_map[aID]
+                a.order = i
+                a.save()
+
+        return Response(status=HTTP_200_OK)
+
     def get_queryset(self):
         u: User = self.request.user
 
@@ -154,10 +231,13 @@ class ActivityViewSet(EduModelViewSet):
     @staticmethod
     def prepare_activity_insert(new_activity: Activity | dict = None):
         course = new_activity.course if isinstance(new_activity, Activity) else new_activity["course"]
+        id = new_activity.id if isinstance(new_activity, Activity) else new_activity["id"] if "id" in new_activity else None
+        ord_ = new_activity.order if isinstance(new_activity, Activity) else new_activity["order"]
         acts = Activity.objects.filter(course=course).order_by("order")
         i = 1
         for a in acts:
-            ord_ = new_activity.order if isinstance(new_activity, Activity) else new_activity["order"]
+            if id and str(a.id) == str(id):
+                continue
 
             if ord_ == i:
                 i += 1
@@ -168,19 +248,19 @@ class ActivityViewSet(EduModelViewSet):
             i += 1
 
     def perform_create(self, serializer):
-        if isinstance(serializer, ActivitySerializer) and serializer.is_valid():
-            self.prepare_activity_insert(serializer.validated_data)
+        #if isinstance(serializer, ActivitySerializer) and serializer.is_valid():
+        #    self.prepare_activity_insert(serializer.validated_data)
         serializer.save()
 
     def perform_update(self, serializer):
-        if isinstance(serializer, ActivitySerializer) and serializer.is_valid():
-            self.prepare_activity_insert(serializer.validated_data)
+        #if isinstance(serializer, ActivitySerializer) and serializer.is_valid():
+        #    self.prepare_activity_insert(serializer.validated_data)
         serializer.save()
 
     def perform_destroy(self, instance):
-        c = instance.course
+        #c = instance.course
         instance.delete()
-        self.fix_activities_order(c)
+        #self.fix_activities_order(c)
 
     serializer_class = ActivitySerializer
     authentication_classes = [MultiTokenAuthentication]
