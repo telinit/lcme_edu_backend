@@ -1,6 +1,9 @@
 import datetime
 from csv import DictReader
+from datetime import datetime
 from typing import Tuple, Any, Optional
+
+from django.db.models import Q
 
 from .user import generate_password
 from ..common.models import Organization, Department
@@ -76,13 +79,13 @@ class StudentsDataImporter(CSVDataImporter):
 
             existing_edu = Education.objects.filter(
                 student=student[0],
-                specialization=spec,
                 finished=None
             ).order_by("-started")
 
-            if existing_edu:
+            if existing_edu and existing_edu[0].specialization == spec:
                 edu = existing_edu[0]
             else:
+                existing_edu.update(finished=datetime.date.today())
                 edu, _ = Education.objects.get_or_create(
                     student=student[0],
                     started=datetime.date((datetime.date.today() - datetime.timedelta(days=31*6)).year, 9, 1),
