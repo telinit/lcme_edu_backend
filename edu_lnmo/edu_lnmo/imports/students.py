@@ -74,12 +74,21 @@ class StudentsDataImporter(CSVDataImporter):
                 rec["Фамилия родителя 2"].strip()
             )
 
-            edu, _ = Education.objects.get_or_create(
+            existing_edu = Education.objects.filter(
                 student=student[0],
-                started=datetime.date((datetime.date.today() - datetime.timedelta(days=31*6)).year, 9, 1),
-                starting_class=rec["Класс"].strip(),
-                specialization=spec
-            )
+                specialization=spec,
+                finished=None
+            ).order_by("-started")
+
+            if existing_edu:
+                edu = existing_edu[0]
+            else:
+                edu, _ = Education.objects.get_or_create(
+                    student=student[0],
+                    started=datetime.date((datetime.date.today() - datetime.timedelta(days=31*6)).year, 9, 1),
+                    starting_class=rec["Класс"].strip(),
+                    specialization=spec
+                )
 
             courses = Course.objects.filter(
                 for_class=rec["Класс"].strip(),
